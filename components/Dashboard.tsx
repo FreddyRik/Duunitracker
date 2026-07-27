@@ -128,25 +128,37 @@ export function Dashboard({ initialJobs }: DashboardProps) {
   async function handleUpdateJob(
     id: string,
     patch: Partial<JobApplication>,
-  ) {
+  ): Promise<boolean> {
     setError(null);
 
-    const response = await fetch("/api/jobs", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, ...patch }),
-    });
+    try {
+      const response = await fetch("/api/jobs", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, ...patch }),
+      });
 
-    const data = (await response.json()) as JobApplication & { error?: string };
+      const data = (await response.json()) as JobApplication & {
+        error?: string;
+      };
 
-    if (!response.ok) {
-      setError(data.error ?? "Failed to update job");
-      return;
+      if (!response.ok) {
+        setError(data.error ?? "Failed to update job");
+        return false;
+      }
+
+      setJobs((current) =>
+        current.map((job) => (job.id === id ? data : job)),
+      );
+      return true;
+    } catch (updateError) {
+      setError(
+        updateError instanceof Error
+          ? updateError.message
+          : "Failed to update job",
+      );
+      return false;
     }
-
-    setJobs((current) =>
-      current.map((job) => (job.id === id ? data : job)),
-    );
   }
 
   async function handleEditSave(values: ReturnType<typeof jobToFormValues>) {
@@ -156,9 +168,14 @@ export function Dashboard({ initialJobs }: DashboardProps) {
     setError(null);
 
     try {
-      await handleUpdateJob(editingJob.id, formValuesToPayload(values));
-      setEditModalOpen(false);
-      setEditingJob(null);
+      const updated = await handleUpdateJob(
+        editingJob.id,
+        formValuesToPayload(values),
+      );
+      if (updated) {
+        setEditModalOpen(false);
+        setEditingJob(null);
+      }
     } finally {
       setSaving(false);
     }
@@ -169,19 +186,27 @@ export function Dashboard({ initialJobs }: DashboardProps) {
 
     setError(null);
 
-    const response = await fetch("/api/jobs", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id }),
-    });
+    try {
+      const response = await fetch("/api/jobs", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
 
-    if (!response.ok) {
-      const data = (await response.json()) as { error?: string };
-      setError(data.error ?? "Failed to delete job");
-      return;
+      if (!response.ok) {
+        const data = (await response.json()) as { error?: string };
+        setError(data.error ?? "Failed to delete job");
+        return;
+      }
+
+      setJobs((current) => current.filter((job) => job.id !== id));
+    } catch (deleteError) {
+      setError(
+        deleteError instanceof Error
+          ? deleteError.message
+          : "Failed to delete job",
+      );
     }
-
-    setJobs((current) => current.filter((job) => job.id !== id));
   }
 
   return (

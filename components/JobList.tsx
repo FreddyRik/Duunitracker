@@ -3,6 +3,7 @@
 import { formatCompanyName, formatDate } from "@/lib/format";
 import type { JobApplication, JobStatus, WorkType } from "@/lib/types";
 import { JOB_STATUSES } from "@/lib/types";
+import { isSafeHttpUrl } from "@/lib/validate";
 
 type JobListProps = {
   jobs: JobApplication[];
@@ -215,7 +216,7 @@ function JobSummary({ job }: { job: JobApplication }) {
   return (
     <div>
       <div className="flex flex-wrap items-center gap-2">
-        {job.url ? (
+        {job.url && isSafeHttpUrl(job.url) ? (
           <a
             href={job.url}
             target="_blank"

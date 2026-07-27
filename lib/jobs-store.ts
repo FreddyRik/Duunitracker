@@ -3,9 +3,12 @@ import path from "path";
 import { formatCompanyName, todayDateString } from "./format";
 import type { CreateJobInput, JobApplication, UpdateJobInput } from "./types";
 import { JOB_STATUSES, WORK_TYPES } from "./types";
+import { assertSafeHttpUrl, ValidationError } from "./validate";
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const JOBS_FILE = path.join(DATA_DIR, "jobs.json");
+
+export { ValidationError };
 
 async function ensureStore(): Promise<void> {
   await fs.mkdir(DATA_DIR, { recursive: true });
@@ -50,10 +53,105 @@ function resolveDateApplied(
   return existing.dateApplied ?? null;
 }
 
+function validateUrl(url: string): string {
+  const trimmed = url.trim();
+  if (trimmed) {
+    assertSafeHttpUrl(trimmed);
+  }
+  return trimmed;
+}
+
+function validateCreateInput(input: CreateJobInput): CreateJobInput {
+  const title = input.title.trim();
+  const company = input.company.trim();
+
+  if (!title) {
+    throw new ValidationError("title is required");
+  }
+
+  if (!company) {
+    throw new ValidationError("company is required");
+  }
+
+  const status = input.status ?? "Saved";
+  if (!JOB_STATUSES.includes(status)) {
+    throw new ValidationError("Invalid status");
+  }
+
+  if (input.workType && !WORK_TYPES.includes(input.workType)) {
+    throw new ValidationError("Invalid work type");
+  }
+
+  return {
+    ...input,
+    title,
+    company,
+    url: validateUrl(input.url),
+    status,
+  };
+}
+
+function validateUpdatePatch(patch: UpdateJobInput): UpdateJobInput {
+  const next: UpdateJobInput = { ...patch };
+
+  if (patch.title !== undefined) {
+    const title = patch.title.trim();
+    if (!title) {
+      throw new ValidationError("title is required");
+    }
+    next.title = title;
+  }
+
+  if (patch.company !== undefined) {
+    const company = patch.company.trim();
+    if (!company) {
+      throw new ValidationError("company is required");
+    }
+    next.company = company;
+  }
+
+  if (patch.url !== undefined) {
+    next.url = validateUrl(patch.url);
+  }
+
+  if (patch.status && !JOB_STATUSES.includes(patch.status)) {
+    throw new ValidationError("Invalid status");
+  }
+
+  if (patch.workType && !WORK_TYPES.includes(patch.workType)) {
+    throw new ValidationError("Invalid work type");
+  }
+
+  return next;
+}
+
 export async function readJobs(): Promise<JobApplication[]> {
   await ensureStore();
   const raw = await fs.readFile(JOBS_FILE, "utf-8");
-  const jobs = JSON.parse(raw) as JobApplication[];
+
+  let jobs: JobApplication[];
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) {
+      throw new Error("jobs.json is not an array");
+    }
+    jobs = parsed as JobApplication[];
+  } catch (error) {
+    const backupPath = `${JOBS_FILE}.corrupt.${Date.now()}`;
+    try {
+      await fs.rename(JOBS_FILE, backupPath);
+    } catch {
+      // If rename fails, overwrite with empty store.
+    }
+    await fs.writeFile(JOBS_FILE, "[]\n", "utf-8");
+    console.error(
+      "Recovered from corrupt jobs.json; backup:",
+      backupPath,
+      error,
+    );
+    return [];
+  }
+
   return jobs
     .map(normalizeJob)
     .sort(
@@ -68,29 +166,29 @@ async function writeJobs(jobs: JobApplication[]): Promise<void> {
 }
 
 export async function createJob(input: CreateJobInput): Promise<JobApplication> {
+  const validated = validateCreateInput(input);
   const jobs = await readJobs();
   const now = new Date().toISOString();
-  const applied = input.applied ?? false;
+  const applied = validated.applied ?? false;
 
   const job: JobApplication = {
     id: crypto.randomUUID(),
-    url: input.url,
-    title: input.title,
-    company: formatCompanyName(input.company),
-    location: input.location ?? null,
-    deadline: input.deadline ?? null,
+    url: validated.url,
+    title: validated.title,
+    company: formatCompanyName(validated.company),
+    location: validated.location ?? null,
+    deadline: validated.deadline ?? null,
     applied,
-    status: input.status ?? "Saved",
-    notes: input.notes ?? "",
+    status: validated.status ?? "Saved",
+    notes: validated.notes ?? "",
     dateApplied:
-      input.dateApplied ??
-      (applied ? todayDateString() : null),
-    interviewDate: input.interviewDate ?? null,
-    contactName: input.contactName ?? null,
-    contactEmail: input.contactEmail ?? null,
-    salary: input.salary ?? null,
-    workType: input.workType ?? null,
-    description: input.description ?? null,
+      validated.dateApplied ?? (applied ? todayDateString() : null),
+    interviewDate: validated.interviewDate ?? null,
+    contactName: validated.contactName ?? null,
+    contactEmail: validated.contactEmail ?? null,
+    salary: validated.salary ?? null,
+    workType: validated.workType ?? null,
+    description: validated.description ?? null,
     createdAt: now,
     updatedAt: now,
   };
@@ -104,6 +202,7 @@ export async function updateJob(
   id: string,
   patch: UpdateJobInput,
 ): Promise<JobApplication | null> {
+  const validated = validateUpdatePatch(patch);
   const jobs = await readJobs();
   const index = jobs.findIndex((job) => job.id === id);
 
@@ -111,25 +210,17 @@ export async function updateJob(
     return null;
   }
 
-  if (patch.status && !JOB_STATUSES.includes(patch.status)) {
-    throw new Error("Invalid status");
-  }
-
-  if (patch.workType && !WORK_TYPES.includes(patch.workType)) {
-    throw new Error("Invalid work type");
-  }
-
   const existing = jobs[index];
   const nextCompany =
-    patch.company !== undefined
-      ? formatCompanyName(patch.company)
+    validated.company !== undefined
+      ? formatCompanyName(validated.company)
       : existing.company;
 
   const updated: JobApplication = {
     ...existing,
-    ...patch,
+    ...validated,
     company: nextCompany,
-    dateApplied: resolveDateApplied(existing, patch),
+    dateApplied: resolveDateApplied(existing, validated),
     id: existing.id,
     createdAt: existing.createdAt,
     updatedAt: new Date().toISOString(),

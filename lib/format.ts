@@ -14,28 +14,37 @@ const ACRONYMS = new Set([
   "UX",
 ]);
 
-export function formatDate(value: string | null | undefined): string {
-  if (!value) return "—";
+/** Parse Finnish d.m.yyyy or d.m.yy into ISO yyyy-mm-dd, or null if invalid. */
+export function parseFinnishDate(value: string): string | null {
+  const match = value.trim().match(/^(\d{1,2})\.(\d{1,2})\.(\d{2,4})$/);
+  if (!match) return null;
 
-  const dateOnly = value.slice(0, 10);
-  const match = dateOnly.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  if (match) {
-    return `${match[3]}.${match[2]}.${match[1]}`;
+  const day = match[1].padStart(2, "0");
+  const month = match[2].padStart(2, "0");
+  let year = match[3];
+  if (year.length === 2) {
+    year = Number(year) > 50 ? `19${year}` : `20${year}`;
   }
 
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) {
-    return value;
+  const iso = `${year}-${month}-${day}`;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return null;
+
+  const parsed = new Date(`${iso}T00:00:00`);
+  if (Number.isNaN(parsed.getTime())) return null;
+  if (
+    parsed.getFullYear() !== Number(year) ||
+    parsed.getMonth() + 1 !== Number(month) ||
+    parsed.getDate() !== Number(day)
+  ) {
+    return null;
   }
 
-  const day = String(parsed.getDate()).padStart(2, "0");
-  const month = String(parsed.getMonth() + 1).padStart(2, "0");
-  const year = parsed.getFullYear();
-  return `${day}.${month}.${year}`;
+  return iso;
 }
 
-export function toDateInputValue(value: string | null | undefined): string {
-  if (!value) return "";
+function toIsoDateParts(value: string): string | null {
+  const finnish = parseFinnishDate(value);
+  if (finnish) return finnish;
 
   const dateOnly = value.slice(0, 10);
   if (/^\d{4}-\d{2}-\d{2}$/.test(dateOnly)) {
@@ -44,13 +53,30 @@ export function toDateInputValue(value: string | null | undefined): string {
 
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) {
-    return "";
+    return null;
   }
 
   const year = parsed.getFullYear();
   const month = String(parsed.getMonth() + 1).padStart(2, "0");
   const day = String(parsed.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+}
+
+export function formatDate(value: string | null | undefined): string {
+  if (!value) return "—";
+
+  const iso = toIsoDateParts(value);
+  if (iso) {
+    const [year, month, day] = iso.split("-");
+    return `${day}.${month}.${year}`;
+  }
+
+  return value;
+}
+
+export function toDateInputValue(value: string | null | undefined): string {
+  if (!value) return "";
+  return toIsoDateParts(value) ?? "";
 }
 
 export function formatCompanyName(name: string): string {
