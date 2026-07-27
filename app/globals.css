@@ -1,0 +1,188 @@
+@import "tailwindcss";
+
+:root,
+[data-theme="light"] {
+  --background: #f4f7f8;
+  --foreground: #0f172a;
+  --surface: rgba(255, 255, 255, 0.9);
+  --surface-solid: #ffffff;
+  --surface-muted: #f8fafc;
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --accent: #0f766e;
+  --accent-hover: #115e59;
+  --accent-fg: #ffffff;
+  --accent-soft: rgba(15, 118, 110, 0.12);
+  --muted: #64748b;
+  --muted-strong: #475569;
+  --danger: #be123c;
+  --danger-bg: #fff1f2;
+  --danger-border: #fecdd3;
+  --overlay: rgba(2, 6, 23, 0.5);
+  --ring: rgba(20, 184, 166, 0.25);
+  --page-gradient: radial-gradient(
+    circle at top,
+    #d9f3ef 0%,
+    #f4f7f8 38%,
+    #eef2f4 100%
+  );
+  --toggle-off: #cbd5e1;
+  --input-disabled: #f1f5f9;
+
+  --badge-saved-bg: #f1f5f9;
+  --badge-saved-fg: #334155;
+  --badge-applied-bg: #e0f2fe;
+  --badge-applied-fg: #075985;
+  --badge-interview-bg: #fef3c7;
+  --badge-interview-fg: #92400e;
+  --badge-rejected-bg: #ffe4e6;
+  --badge-rejected-fg: #9f1239;
+  --badge-offer-bg: #d1fae5;
+  --badge-offer-fg: #065f46;
+  --badge-remote-bg: #ede9fe;
+  --badge-remote-fg: #5b21b6;
+  --badge-hybrid-bg: #e0e7ff;
+  --badge-hybrid-fg: #3730a3;
+  --badge-onsite-bg: #ffedd5;
+  --badge-onsite-fg: #9a3412;
+}
+
+[data-theme="dark"] {
+  --background: #0b1220;
+  --foreground: #e2e8f0;
+  --surface: rgba(15, 23, 42, 0.92);
+  --surface-solid: #111827;
+  --surface-muted: #1e293b;
+  --border: #334155;
+  --border-strong: #475569;
+  --accent: #2dd4bf;
+  --accent-hover: #5eead4;
+  --accent-fg: #042f2e;
+  --accent-soft: rgba(45, 212, 191, 0.15);
+  --muted: #94a3b8;
+  --muted-strong: #cbd5e1;
+  --danger: #fb7185;
+  --danger-bg: rgba(244, 63, 94, 0.15);
+  --danger-border: rgba(251, 113, 133, 0.35);
+  --overlay: rgba(2, 6, 23, 0.7);
+  --ring: rgba(45, 212, 191, 0.3);
+  --page-gradient: radial-gradient(
+    circle at top,
+    #132033 0%,
+    #0b1220 42%,
+    #080d16 100%
+  );
+  --toggle-off: #475569;
+  --input-disabled: #1e293b;
+
+  --badge-saved-bg: rgba(148, 163, 184, 0.18);
+  --badge-saved-fg: #cbd5e1;
+  --badge-applied-bg: rgba(56, 189, 248, 0.18);
+  --badge-applied-fg: #7dd3fc;
+  --badge-interview-bg: rgba(251, 191, 36, 0.18);
+  --badge-interview-fg: #fcd34d;
+  --badge-rejected-bg: rgba(251, 113, 133, 0.18);
+  --badge-rejected-fg: #fda4af;
+  --badge-offer-bg: rgba(52, 211, 153, 0.18);
+  --badge-offer-fg: #6ee7b7;
+  --badge-remote-bg: rgba(167, 139, 250, 0.18);
+  --badge-remote-fg: #c4b5fd;
+  --badge-hybrid-bg: rgba(129, 140, 248, 0.18);
+  --badge-hybrid-fg: #a5b4fc;
+  --badge-onsite-bg: rgba(251, 146, 60, 0.18);
+  --badge-onsite-fg: #fdba74;
+}
+
+[data-theme="midsummer"] {
+  --background: #0f2a1f;
+  --foreground: #eef6ef;
+  --surface: rgba(30, 61, 46, 0.88);
+  --surface-solid: #1a3829;
+  --surface-muted: #234333;
+  --border: #3d6b52;
+  --border-strong: #5a8f6f;
+  --accent: #5eb8d4;
+  --accent-hover: #7ec8de;
+  --accent-fg: #06262f;
+  --accent-soft: rgba(94, 184, 212, 0.18);
+  --muted: #a8c4b4;
+  --muted-strong: #c5dccf;
+  --danger: #f0a3a0;
+  --danger-bg: rgba(220, 100, 95, 0.2);
+  --danger-border: rgba(240, 163, 160, 0.4);
+  --overlay: rgba(8, 28, 18, 0.72);
+  --ring: rgba(232, 196, 104, 0.35);
+  --page-gradient: radial-gradient(
+    circle at top,
+    #2a5a3d 0%,
+    #163528 35%,
+    #0f2a1f 70%,
+    #0a1f16 100%
+  );
+  --toggle-off: #3d6b52;
+  --input-disabled: #234333;
+
+  --badge-saved-bg: rgba(168, 196, 180, 0.22);
+  --badge-saved-fg: #d7ebe0;
+  --badge-applied-bg: rgba(94, 184, 212, 0.22);
+  --badge-applied-fg: #b8e4f2;
+  --badge-interview-bg: rgba(232, 196, 104, 0.25);
+  --badge-interview-fg: #f5e2a8;
+  --badge-rejected-bg: rgba(240, 163, 160, 0.22);
+  --badge-rejected-fg: #f5c4c2;
+  --badge-offer-bg: rgba(126, 200, 150, 0.25);
+  --badge-offer-fg: #c5efd2;
+  --badge-remote-bg: rgba(126, 200, 210, 0.22);
+  --badge-remote-fg: #c5eef3;
+  --badge-hybrid-bg: rgba(168, 196, 180, 0.25);
+  --badge-hybrid-fg: #d7ebe0;
+  --badge-onsite-bg: rgba(232, 196, 104, 0.22);
+  --badge-onsite-fg: #f5e2a8;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-solid: var(--surface-solid);
+  --color-surface-muted: var(--surface-muted);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-fg: var(--accent-fg);
+  --color-accent-soft: var(--accent-soft);
+  --color-muted: var(--muted);
+  --color-muted-strong: var(--muted-strong);
+  --color-danger: var(--danger);
+  --color-danger-bg: var(--danger-bg);
+  --color-danger-border: var(--danger-border);
+  --color-overlay: var(--overlay);
+  --color-ring: var(--ring);
+  --color-toggle-off: var(--toggle-off);
+  --color-input-disabled: var(--input-disabled);
+  --color-badge-saved-bg: var(--badge-saved-bg);
+  --color-badge-saved-fg: var(--badge-saved-fg);
+  --color-badge-applied-bg: var(--badge-applied-bg);
+  --color-badge-applied-fg: var(--badge-applied-fg);
+  --color-badge-interview-bg: var(--badge-interview-bg);
+  --color-badge-interview-fg: var(--badge-interview-fg);
+  --color-badge-rejected-bg: var(--badge-rejected-bg);
+  --color-badge-rejected-fg: var(--badge-rejected-fg);
+  --color-badge-offer-bg: var(--badge-offer-bg);
+  --color-badge-offer-fg: var(--badge-offer-fg);
+  --color-badge-remote-bg: var(--badge-remote-bg);
+  --color-badge-remote-fg: var(--badge-remote-fg);
+  --color-badge-hybrid-bg: var(--badge-hybrid-bg);
+  --color-badge-hybrid-fg: var(--badge-hybrid-fg);
+  --color-badge-onsite-bg: var(--badge-onsite-bg);
+  --color-badge-onsite-fg: var(--badge-onsite-fg);
+  --font-sans: var(--font-plus-jakarta), ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  background: var(--page-gradient);
+  background-attachment: fixed;
+  color: var(--foreground);
+  min-height: 100%;
+}
