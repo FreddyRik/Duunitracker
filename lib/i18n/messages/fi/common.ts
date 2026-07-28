@@ -28,7 +28,7 @@ export const fiCommon: Pick<
   app: {
     name: "Duunitracker",
     intro:
-      "Pidä työnhakusi hallinnassa. Tuo ilmoitukset Duunitorista, seuraa hakemustesi tilaa ja tallenna muistiinpanot, sekä ilmoitukset turvallisesti selaimeesi.",
+      "Tuo työpaikkailmoitukset Duunitorista, seuraa hakemustesi tilaa ja tallenna muistiinpanot, sekä ilmoitukset turvallisesti selaimeesi.",
   },
   theme: {
     ariaLabel: "Väriteema",
@@ -45,7 +45,7 @@ export const fiCommon: Pick<
     siteLinks: "Sivuston linkit",
   },
   backup: {
-    export: "Vie varmuuskopio",
+    export: "Tallenna varmuuskopio",
     import: "Tuo varmuuskopio",
     confirmReplace:
       "Tuonti korvaa kaikki tässä selaimessa tallennetut hakemukset. Jatketaanko?",
