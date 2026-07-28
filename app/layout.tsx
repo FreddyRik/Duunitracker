@@ -18,7 +18,7 @@ const themeInitScript = `
   try {
     var key = "job-tracker-theme";
     var stored = localStorage.getItem(key);
-    var theme = stored === "light" || stored === "dark" || stored === "midsummer"
+    var theme = stored === "light" || stored === "dark"
       ? stored
       : "dark";
     document.documentElement.setAttribute("data-theme", theme);

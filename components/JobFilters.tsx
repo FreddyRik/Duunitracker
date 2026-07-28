@@ -1,14 +1,23 @@
 "use client";
 
-import type { JobStatus } from "@/lib/types";
-import { JOB_STATUSES } from "@/lib/types";
+import type { JobListFilter } from "@/types/job";
+import { JOB_STATUSES } from "@/types/job";
 
 type JobFiltersProps = {
   search: string;
-  statusFilter: JobStatus | "All";
+  statusFilter: JobListFilter;
   onSearchChange: (value: string) => void;
-  onStatusFilterChange: (value: JobStatus | "All") => void;
+  onStatusFilterChange: (value: JobListFilter) => void;
 };
+
+const FILTER_OPTIONS: { value: JobListFilter; label: string }[] = [
+  { value: "All", label: "All statuses" },
+  { value: "InProgress", label: "In Progress" },
+  ...JOB_STATUSES.map((status) => ({
+    value: status as JobListFilter,
+    label: status,
+  })),
+];
 
 export function JobFilters({
   search,
@@ -37,14 +46,13 @@ export function JobFilters({
         id="status-filter"
         value={statusFilter}
         onChange={(event) =>
-          onStatusFilterChange(event.target.value as JobStatus | "All")
+          onStatusFilterChange(event.target.value as JobListFilter)
         }
         className="rounded-xl border border-border-strong bg-surface-solid px-4 py-2.5 text-sm text-foreground shadow-sm outline-none transition focus:border-accent focus:ring-2 focus:ring-ring sm:min-w-[10rem]"
       >
-        <option value="All">All statuses</option>
-        {JOB_STATUSES.map((status) => (
-          <option key={status} value={status}>
-            {status}
+        {FILTER_OPTIONS.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
           </option>
         ))}
       </select>

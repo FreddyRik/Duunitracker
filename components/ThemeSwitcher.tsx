@@ -5,7 +5,6 @@ import { THEMES, useTheme, type Theme } from "@/components/ThemeProvider";
 const LABELS: Record<Theme, string> = {
   light: "Light",
   dark: "Dark",
-  midsummer: "Midsummer",
 };
 
 export function ThemeSwitcher() {

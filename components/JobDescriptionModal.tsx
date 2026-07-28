@@ -1,7 +1,7 @@
 "use client";
 
 import { formatCompanyName } from "@/lib/format";
-import type { JobApplication } from "@/lib/types";
+import type { JobApplication } from "@/types/job";
 
 type JobDescriptionModalProps = {
   job: JobApplication | null;

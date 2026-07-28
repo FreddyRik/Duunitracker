@@ -45,6 +45,10 @@
   --badge-hybrid-fg: #3730a3;
   --badge-onsite-bg: #ffedd5;
   --badge-onsite-fg: #9a3412;
+  --badge-deadline-bg: #f1f5f9;
+  --badge-deadline-fg: #475569;
+  --badge-deadline-urgent-bg: #fef3c7;
+  --badge-deadline-urgent-fg: #b45309;
 }
 
 [data-theme="dark"] {
@@ -91,53 +95,10 @@
   --badge-hybrid-fg: #a5b4fc;
   --badge-onsite-bg: rgba(251, 146, 60, 0.18);
   --badge-onsite-fg: #fdba74;
-}
-
-[data-theme="midsummer"] {
-  --background: #0f2a1f;
-  --foreground: #eef6ef;
-  --surface: rgba(30, 61, 46, 0.88);
-  --surface-solid: #1a3829;
-  --surface-muted: #234333;
-  --border: #3d6b52;
-  --border-strong: #5a8f6f;
-  --accent: #5eb8d4;
-  --accent-hover: #7ec8de;
-  --accent-fg: #06262f;
-  --accent-soft: rgba(94, 184, 212, 0.18);
-  --muted: #a8c4b4;
-  --muted-strong: #c5dccf;
-  --danger: #f0a3a0;
-  --danger-bg: rgba(220, 100, 95, 0.2);
-  --danger-border: rgba(240, 163, 160, 0.4);
-  --overlay: rgba(8, 28, 18, 0.72);
-  --ring: rgba(232, 196, 104, 0.35);
-  --page-gradient: radial-gradient(
-    circle at top,
-    #2a5a3d 0%,
-    #163528 35%,
-    #0f2a1f 70%,
-    #0a1f16 100%
-  );
-  --toggle-off: #3d6b52;
-  --input-disabled: #234333;
-
-  --badge-saved-bg: rgba(168, 196, 180, 0.22);
-  --badge-saved-fg: #d7ebe0;
-  --badge-applied-bg: rgba(94, 184, 212, 0.22);
-  --badge-applied-fg: #b8e4f2;
-  --badge-interview-bg: rgba(232, 196, 104, 0.25);
-  --badge-interview-fg: #f5e2a8;
-  --badge-rejected-bg: rgba(240, 163, 160, 0.22);
-  --badge-rejected-fg: #f5c4c2;
-  --badge-offer-bg: rgba(126, 200, 150, 0.25);
-  --badge-offer-fg: #c5efd2;
-  --badge-remote-bg: rgba(126, 200, 210, 0.22);
-  --badge-remote-fg: #c5eef3;
-  --badge-hybrid-bg: rgba(168, 196, 180, 0.25);
-  --badge-hybrid-fg: #d7ebe0;
-  --badge-onsite-bg: rgba(232, 196, 104, 0.22);
-  --badge-onsite-fg: #f5e2a8;
+  --badge-deadline-bg: rgba(148, 163, 184, 0.18);
+  --badge-deadline-fg: #cbd5e1;
+  --badge-deadline-urgent-bg: rgba(251, 191, 36, 0.22);
+  --badge-deadline-urgent-fg: #fcd34d;
 }
 
 @theme inline {
@@ -177,6 +138,10 @@
   --color-badge-hybrid-fg: var(--badge-hybrid-fg);
   --color-badge-onsite-bg: var(--badge-onsite-bg);
   --color-badge-onsite-fg: var(--badge-onsite-fg);
+  --color-badge-deadline-bg: var(--badge-deadline-bg);
+  --color-badge-deadline-fg: var(--badge-deadline-fg);
+  --color-badge-deadline-urgent-bg: var(--badge-deadline-urgent-bg);
+  --color-badge-deadline-urgent-fg: var(--badge-deadline-urgent-fg);
   --font-sans: var(--font-plus-jakarta), ui-sans-serif, system-ui, sans-serif;
 }
 

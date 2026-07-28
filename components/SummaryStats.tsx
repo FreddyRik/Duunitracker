@@ -1,37 +1,70 @@
-import type { JobApplication } from "@/lib/types";
+"use client";
+
+import type { JobApplication, JobListFilter } from "@/types/job";
 
 type SummaryStatsProps = {
   jobs: JobApplication[];
+  statusFilter: JobListFilter;
+  onFilterChange: (filter: JobListFilter) => void;
 };
 
-export function SummaryStats({ jobs }: SummaryStatsProps) {
-  const total = jobs.length;
-  const applied = jobs.filter((job) => job.applied).length;
-  const inProgress = jobs.filter(
-    (job) => job.status === "Interview" || job.status === "Offer",
-  ).length;
-  const rejected = jobs.filter((job) => job.status === "Rejected").length;
+type StatItem = {
+  label: string;
+  value: number;
+  filter: JobListFilter;
+};
 
-  const items = [
-    { label: "Total Jobs", value: total },
-    { label: "Applied", value: applied },
-    { label: "In Progress", value: inProgress },
-    { label: "Rejected", value: rejected },
+export function SummaryStats({
+  jobs,
+  statusFilter,
+  onFilterChange,
+}: SummaryStatsProps) {
+  const items: StatItem[] = [
+    { label: "Total Jobs", value: jobs.length, filter: "All" },
+    {
+      label: "Applied",
+      value: jobs.filter((job) => job.status === "Applied").length,
+      filter: "Applied",
+    },
+    {
+      label: "In Progress",
+      value: jobs.filter(
+        (job) => job.status === "Interview" || job.status === "Offer",
+      ).length,
+      filter: "InProgress",
+    },
+    {
+      label: "Rejected",
+      value: jobs.filter((job) => job.status === "Rejected").length,
+      filter: "Rejected",
+    },
   ];
 
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-      {items.map((item) => (
-        <div
-          key={item.label}
-          className="rounded-2xl border border-border bg-surface px-4 py-3 shadow-sm"
-        >
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-            {item.label}
-          </p>
-          <p className="mt-1 text-2xl font-bold text-foreground">{item.value}</p>
-        </div>
-      ))}
+      {items.map((item) => {
+        const active = statusFilter === item.filter;
+        return (
+          <button
+            key={item.label}
+            type="button"
+            onClick={() => onFilterChange(item.filter)}
+            aria-pressed={active}
+            className={`rounded-2xl border px-4 py-3 text-left shadow-sm transition ${
+              active
+                ? "border-accent bg-accent-soft ring-2 ring-ring"
+                : "border-border bg-surface hover:border-border-strong hover:bg-surface-muted"
+            }`}
+          >
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+              {item.label}
+            </p>
+            <p className="mt-1 text-2xl font-bold text-foreground">
+              {item.value}
+            </p>
+          </button>
+        );
+      })}
     </div>
   );
 }
