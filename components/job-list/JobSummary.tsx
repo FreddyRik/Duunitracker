@@ -1,12 +1,15 @@
 "use client";
 
+import { useLocale } from "@/components/LocaleProvider";
 import { formatCompanyName, formatDate } from "@/lib/format";
+import { formatTemplate, workTypeLabel } from "@/lib/i18n";
 import { formatDeadlineRelative, isDeadlineUrgent } from "@/lib/job-status";
 import { workTypeStyles } from "@/lib/job-status-styles";
 import { isSafeHttpUrl } from "@/lib/validate";
 import type { JobApplication } from "@/types/job";
 
 function DeadlineBadge({ deadline }: { deadline: string }) {
+  const { t } = useLocale();
   const urgent = isDeadlineUrgent(deadline);
   const formatted = formatDate(deadline);
   return (
@@ -18,21 +21,29 @@ function DeadlineBadge({ deadline }: { deadline: string }) {
           : "bg-badge-deadline-bg text-badge-deadline-fg"
       }`}
     >
-      {formatDeadlineRelative(deadline)}
+      {formatDeadlineRelative(deadline, t.deadline)}
       <span className="sr-only"> ({formatted})</span>
     </span>
   );
 }
 
 export function JobSummary({ job }: { job: JobApplication }) {
+  const { t } = useLocale();
+
   const metaParts = [
-    job.interviewDate ? `Interview ${formatDate(job.interviewDate)}` : null,
+    job.interviewDate
+      ? formatTemplate(t.job.interviewOn, {
+          date: formatDate(job.interviewDate),
+        })
+      : null,
   ].filter(Boolean);
 
   const contactParts = [
     job.contactName,
     job.contactEmail,
-    job.salary ? `Salary: ${job.salary}` : null,
+    job.salary
+      ? formatTemplate(t.job.salary, { salary: job.salary })
+      : null,
   ].filter(Boolean);
 
   const hasSafeUrl = Boolean(job.url && isSafeHttpUrl(job.url));
@@ -46,7 +57,7 @@ export function JobSummary({ job }: { job: JobApplication }) {
             href={job.url}
             target="_blank"
             rel="noreferrer"
-            aria-label={`Open ${job.title} posting`}
+            aria-label={formatTemplate(t.job.openPosting, { title: job.title })}
             className="inline-flex h-5 w-5 items-center justify-center rounded text-muted transition hover:bg-surface-muted hover:text-accent"
           >
             ↗
@@ -56,7 +67,7 @@ export function JobSummary({ job }: { job: JobApplication }) {
           <span
             className={`rounded-full px-2 py-0.5 text-xs font-semibold ${workTypeStyles[job.workType]}`}
           >
-            {job.workType}
+            {workTypeLabel(t, job.workType)}
           </span>
         )}
       </div>

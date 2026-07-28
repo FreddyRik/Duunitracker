@@ -1,5 +1,7 @@
 "use client";
 
+import { useLocale } from "@/components/LocaleProvider";
+import { statusLabel } from "@/lib/i18n";
 import { statusStyles } from "@/lib/job-status-styles";
 import type { JobStatus } from "@/types/job";
 import { JOB_STATUSES } from "@/types/job";
@@ -11,6 +13,8 @@ export function StatusSelect({
   status: JobStatus;
   onChange: (status: JobStatus) => void;
 }) {
+  const { t } = useLocale();
+
   return (
     <select
       value={status}
@@ -19,7 +23,7 @@ export function StatusSelect({
     >
       {JOB_STATUSES.map((option) => (
         <option key={option} value={option}>
-          {option}
+          {statusLabel(t, option)}
         </option>
       ))}
     </select>

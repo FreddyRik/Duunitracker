@@ -7,11 +7,16 @@ import {
   useMemo,
   useSyncExternalStore,
 } from "react";
+import {
+  THEME_CHANGE_EVENT,
+  THEME_STORAGE_KEY,
+} from "@/lib/site-config";
+import { ensureStorageMigrated } from "@/lib/storage-migration";
 
 export const THEMES = ["light", "dark"] as const;
 export type Theme = (typeof THEMES)[number];
 
-export const THEME_STORAGE_KEY = "job-tracker-theme";
+export { THEME_STORAGE_KEY };
 export const DEFAULT_THEME: Theme = "dark";
 
 type ThemeContextValue = {
@@ -32,6 +37,8 @@ export function applyTheme(theme: Theme) {
 function getStoredTheme(): Theme {
   if (typeof window === "undefined") return DEFAULT_THEME;
 
+  ensureStorageMigrated();
+
   const fromDom = document.documentElement.getAttribute("data-theme");
   if (isTheme(fromDom)) return fromDom;
 
@@ -41,10 +48,10 @@ function getStoredTheme(): Theme {
 
 function subscribe(onStoreChange: () => void) {
   window.addEventListener("storage", onStoreChange);
-  window.addEventListener("job-tracker-theme-change", onStoreChange);
+  window.addEventListener(THEME_CHANGE_EVENT, onStoreChange);
   return () => {
     window.removeEventListener("storage", onStoreChange);
-    window.removeEventListener("job-tracker-theme-change", onStoreChange);
+    window.removeEventListener(THEME_CHANGE_EVENT, onStoreChange);
   };
 }
 
@@ -58,7 +65,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const setTheme = useCallback((next: Theme) => {
     applyTheme(next);
     window.localStorage.setItem(THEME_STORAGE_KEY, next);
-    window.dispatchEvent(new Event("job-tracker-theme-change"));
+    window.dispatchEvent(new Event(THEME_CHANGE_EVENT));
   }, []);
 
   const value = useMemo(() => ({ theme, setTheme }), [theme, setTheme]);

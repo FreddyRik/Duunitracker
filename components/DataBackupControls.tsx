@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import { useLocale } from "@/components/LocaleProvider";
 
 type DataBackupControlsProps = {
   jobCount: number;
@@ -13,15 +14,14 @@ export function DataBackupControls({
   onExport,
   onImport,
 }: DataBackupControlsProps) {
+  const { t } = useLocale();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const shouldReplace = window.confirm(
-      "Import will replace all jobs stored in this browser. Continue?",
-    );
+    const shouldReplace = window.confirm(t.backup.confirmReplace);
     if (!shouldReplace) {
       event.target.value = "";
       return;
@@ -39,14 +39,14 @@ export function DataBackupControls({
         disabled={jobCount === 0}
         className="rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-medium text-foreground transition hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-50"
       >
-        Export backup
+        {t.backup.export}
       </button>
       <button
         type="button"
         onClick={() => fileInputRef.current?.click()}
         className="rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-medium text-foreground transition hover:border-accent hover:text-accent"
       >
-        Import backup
+        {t.backup.import}
       </button>
       <input
         ref={fileInputRef}

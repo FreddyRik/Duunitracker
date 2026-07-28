@@ -1,6 +1,8 @@
 "use client";
 
+import { useLocale } from "@/components/LocaleProvider";
 import { formatDate } from "@/lib/format";
+import { formatTemplate } from "@/lib/i18n";
 import { buildStatusUpdate } from "@/lib/job-status";
 import { ActionButtons } from "@/components/job-list/ActionButtons";
 import { JobSummary } from "@/components/job-list/JobSummary";
@@ -18,6 +20,8 @@ export function JobRowDesktop({
 }: {
   job: JobApplication;
 } & JobListHandlers) {
+  const { t } = useLocale();
+
   function handleStatusChange(status: JobStatus) {
     void onUpdate(job.id, buildStatusUpdate(job, status));
   }
@@ -31,7 +35,9 @@ export function JobRowDesktop({
         <StatusSelect status={job.status} onChange={handleStatusChange} />
         {job.dateApplied && (
           <p className="mt-1 text-xs text-muted">
-            Applied {formatDate(job.dateApplied)}
+            {formatTemplate(t.job.appliedOn, {
+              date: formatDate(job.dateApplied),
+            })}
           </p>
         )}
       </td>

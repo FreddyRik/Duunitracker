@@ -1,4 +1,6 @@
 import { parseFinnishDate, todayDateString } from "@/lib/format";
+import type { Messages } from "@/lib/i18n/types";
+import { formatTemplate } from "@/lib/i18n";
 import type { JobApplication, JobStatus } from "@/types/job";
 
 export function buildStatusUpdate(
@@ -45,24 +47,29 @@ export function isDeadlineUrgent(value: string | null | undefined): boolean {
   return days !== null && days >= 0 && days <= 5;
 }
 
-export function formatDeadlineRelative(value: string): string {
+export function formatDeadlineRelative(
+  value: string,
+  deadline: Messages["deadline"],
+): string {
   const days = daysUntilDeadline(value);
   if (days === null) {
-    return "Due";
+    return deadline.due;
   }
 
   if (days < 0) {
     const overdue = Math.abs(days);
-    return overdue === 1 ? "Overdue by 1 day" : `Overdue by ${overdue} days`;
+    return overdue === 1
+      ? deadline.overdueOne
+      : formatTemplate(deadline.overdueMany, { days: overdue });
   }
 
   if (days === 0) {
-    return "Due today";
+    return deadline.dueToday;
   }
 
   if (days === 1) {
-    return "Due tomorrow";
+    return deadline.dueTomorrow;
   }
 
-  return `Due in ${days} days`;
+  return formatTemplate(deadline.dueInDays, { days });
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useLocale } from "@/components/LocaleProvider";
 import { JobFormPrimaryFields } from "@/components/JobFormPrimaryFields";
 import { JobFormTrackingFields } from "@/components/JobFormTrackingFields";
 import { mergeJobFormValues } from "@/lib/job-form-mappers";
@@ -23,6 +24,7 @@ export function JobFormModal({
   onClose,
   onSave,
 }: JobFormModalProps) {
+  const { t } = useLocale();
   const [values, setValues] = useState<JobFormValues>(() =>
     mergeJobFormValues(initialValues),
   );
@@ -30,6 +32,13 @@ export function JobFormModal({
   if (!open) return null;
 
   const isUrlRequired = mode === "import";
+  const title =
+    mode === "import"
+      ? t.form.confirmImport
+      : mode === "manual"
+        ? t.form.addManual
+        : t.form.editJob;
+  const hint = mode === "manual" ? t.form.manualHint : t.form.reviewHint;
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -49,24 +58,14 @@ export function JobFormModal({
       >
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-xl font-semibold text-foreground">
-              {mode === "import"
-                ? "Confirm imported job"
-                : mode === "manual"
-                  ? "Add job manually"
-                  : "Edit job"}
-            </h2>
-            <p className="mt-1 text-sm text-muted">
-              {mode === "manual"
-                ? "Fill in the job details for postings outside Duunitori."
-                : "Review and adjust the details before saving."}
-            </p>
+            <h2 className="text-xl font-semibold text-foreground">{title}</h2>
+            <p className="mt-1 text-sm text-muted">{hint}</p>
           </div>
           <button
             type="button"
             onClick={onClose}
             className="rounded-lg px-2 py-1 text-muted transition hover:bg-surface-muted hover:text-foreground"
-            aria-label="Close"
+            aria-label={t.actions.close}
           >
             ×
           </button>
@@ -86,7 +85,7 @@ export function JobFormModal({
               onClick={onClose}
               className="rounded-xl border border-border-strong px-4 py-2 text-sm font-medium text-muted-strong transition hover:bg-surface-muted"
             >
-              Cancel
+              {t.actions.cancel}
             </button>
             <button
               type="submit"
@@ -94,10 +93,10 @@ export function JobFormModal({
               className="rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-accent-fg transition hover:bg-accent-hover disabled:opacity-60"
             >
               {saving
-                ? "Saving..."
+                ? t.form.saving
                 : mode === "edit"
-                  ? "Update job"
-                  : "Save job"}
+                  ? t.form.updateJob
+                  : t.form.saveJob}
             </button>
           </div>
         </form>

@@ -1,6 +1,8 @@
 "use client";
 
+import { useLocale } from "@/components/LocaleProvider";
 import { JobFormField, inputClassName } from "@/components/JobFormField";
+import { statusLabel, workTypeLabel } from "@/lib/i18n";
 import type { JobFormValues, JobStatus, WorkType } from "@/types/job";
 import { JOB_STATUSES, WORK_TYPES } from "@/types/job";
 
@@ -10,10 +12,12 @@ type Props = {
 };
 
 export function JobFormTrackingFields({ values, onPatch }: Props) {
+  const { t } = useLocale();
+
   return (
     <>
       <div className="grid gap-4 sm:grid-cols-2">
-        <JobFormField label="Applied">
+        <JobFormField label={t.form.applied}>
           <select
             value={values.applied ? "yes" : "no"}
             onChange={(event) =>
@@ -21,12 +25,12 @@ export function JobFormTrackingFields({ values, onPatch }: Props) {
             }
             className={inputClassName}
           >
-            <option value="no">No</option>
-            <option value="yes">Yes</option>
+            <option value="no">{t.form.no}</option>
+            <option value="yes">{t.form.yes}</option>
           </select>
         </JobFormField>
 
-        <JobFormField label="Status">
+        <JobFormField label={t.form.status}>
           <select
             value={values.status}
             onChange={(event) =>
@@ -36,7 +40,7 @@ export function JobFormTrackingFields({ values, onPatch }: Props) {
           >
             {JOB_STATUSES.map((status) => (
               <option key={status} value={status}>
-                {status}
+                {statusLabel(t, status)}
               </option>
             ))}
           </select>
@@ -44,7 +48,7 @@ export function JobFormTrackingFields({ values, onPatch }: Props) {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <JobFormField label="Date applied">
+        <JobFormField label={t.form.dateApplied}>
           <input
             type="date"
             value={values.dateApplied}
@@ -54,7 +58,7 @@ export function JobFormTrackingFields({ values, onPatch }: Props) {
           />
         </JobFormField>
 
-        <JobFormField label="Interview date">
+        <JobFormField label={t.form.interviewDate}>
           <input
             type="date"
             value={values.interviewDate}
@@ -67,7 +71,7 @@ export function JobFormTrackingFields({ values, onPatch }: Props) {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <JobFormField label="Work type">
+        <JobFormField label={t.form.workType}>
           <select
             value={values.workType}
             onChange={(event) =>
@@ -75,28 +79,28 @@ export function JobFormTrackingFields({ values, onPatch }: Props) {
             }
             className={inputClassName}
           >
-            <option value="">Not set</option>
+            <option value="">{t.workType.notSet}</option>
             {WORK_TYPES.map((type) => (
               <option key={type} value={type}>
-                {type}
+                {workTypeLabel(t, type)}
               </option>
             ))}
           </select>
         </JobFormField>
 
-        <JobFormField label="Salary / pay range">
+        <JobFormField label={t.form.salary}>
           <input
             type="text"
             value={values.salary}
             onChange={(event) => onPatch({ salary: event.target.value })}
-            placeholder="e.g. 3500–4500 EUR/month"
+            placeholder={t.form.salaryPlaceholder}
             className={inputClassName}
           />
         </JobFormField>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <JobFormField label="Contact person">
+        <JobFormField label={t.form.contactPerson}>
           <input
             type="text"
             value={values.contactName}
@@ -105,7 +109,7 @@ export function JobFormTrackingFields({ values, onPatch }: Props) {
           />
         </JobFormField>
 
-        <JobFormField label="Contact email">
+        <JobFormField label={t.form.contactEmail}>
           <input
             type="email"
             value={values.contactEmail}
@@ -115,7 +119,7 @@ export function JobFormTrackingFields({ values, onPatch }: Props) {
         </JobFormField>
       </div>
 
-      <JobFormField label="Notes">
+      <JobFormField label={t.form.notes}>
         <textarea
           rows={3}
           value={values.notes}

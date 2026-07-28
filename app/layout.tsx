@@ -1,6 +1,14 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
+import { LocaleProvider } from "@/components/LocaleProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { fi } from "@/lib/i18n/messages/fi";
+import {
+  LEGACY_THEME_STORAGE_KEY,
+  LOCALE_STORAGE_KEY,
+  THEME_STORAGE_KEY,
+} from "@/lib/site-config";
+import { DEFAULT_LOCALE } from "@/types/locale";
 import "./globals.css";
 
 const plusJakarta = Plus_Jakarta_Sans({
@@ -9,21 +17,30 @@ const plusJakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Job Application Tracker",
-  description: "Track Duunitori job applications locally on your PC.",
+  title: fi.meta.title,
+  description: fi.meta.description,
 };
 
 const themeInitScript = `
 (function () {
   try {
-    var key = "job-tracker-theme";
-    var stored = localStorage.getItem(key);
+    var key = "${THEME_STORAGE_KEY}";
+    var legacyKey = "${LEGACY_THEME_STORAGE_KEY}";
+    var stored = localStorage.getItem(key) || localStorage.getItem(legacyKey);
     var theme = stored === "light" || stored === "dark"
       ? stored
       : "dark";
     document.documentElement.setAttribute("data-theme", theme);
   } catch (e) {
     document.documentElement.setAttribute("data-theme", "dark");
+  }
+  try {
+    var localeKey = "${LOCALE_STORAGE_KEY}";
+    var locale = localStorage.getItem(localeKey);
+    document.documentElement.lang =
+      locale === "en" || locale === "fi" ? locale : "${DEFAULT_LOCALE}";
+  } catch (e) {
+    document.documentElement.lang = "${DEFAULT_LOCALE}";
   }
 })();
 `;
@@ -35,7 +52,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang={DEFAULT_LOCALE}
       data-theme="dark"
       className={`${plusJakarta.variable} h-full antialiased`}
       suppressHydrationWarning
@@ -44,7 +61,9 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body className="min-h-full font-sans text-foreground">
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <LocaleProvider>{children}</LocaleProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import { useLocale } from "@/components/LocaleProvider";
 import {
   createJobRequest,
   deleteJobRequest,
@@ -27,6 +28,7 @@ type MutationSetters = {
 };
 
 export function useJobMutations(setters: MutationSetters) {
+  const { t } = useLocale();
   const {
     setJobs,
     setImporting,
@@ -52,7 +54,7 @@ export function useJobMutations(setters: MutationSetters) {
       setError(
         importError instanceof Error
           ? importError.message
-          : "Failed to import job",
+          : t.errors.importJobFailed,
       );
     } finally {
       setImporting(false);
@@ -69,7 +71,7 @@ export function useJobMutations(setters: MutationSetters) {
       setCreateDraft(null);
     } catch (saveError) {
       setError(
-        saveError instanceof Error ? saveError.message : "Failed to save job",
+        saveError instanceof Error ? saveError.message : t.errors.saveJobFailed,
       );
     } finally {
       setSaving(false);
@@ -91,7 +93,7 @@ export function useJobMutations(setters: MutationSetters) {
       setError(
         updateError instanceof Error
           ? updateError.message
-          : "Failed to update job",
+          : t.errors.updateJobFailed,
       );
       return false;
     }
@@ -116,7 +118,7 @@ export function useJobMutations(setters: MutationSetters) {
   }
 
   async function handleDelete(id: string) {
-    if (!window.confirm("Delete this job application?")) return;
+    if (!window.confirm(t.errors.deleteConfirm)) return;
     setError(null);
     try {
       await deleteJobRequest(id);
@@ -125,7 +127,7 @@ export function useJobMutations(setters: MutationSetters) {
       setError(
         deleteError instanceof Error
           ? deleteError.message
-          : "Failed to delete job",
+          : t.errors.deleteJobFailed,
       );
     }
   }

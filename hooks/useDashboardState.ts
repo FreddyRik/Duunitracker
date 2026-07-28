@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useLocale } from "@/components/LocaleProvider";
+import { useBackupReminder } from "@/hooks/useBackupReminder";
 import { useJobMutations } from "@/hooks/useJobMutations";
 import { useModalState } from "@/hooks/useModalState";
 import { parseJobsImport, readJobs, replaceJobs } from "@/lib/jobs-local-store";
@@ -8,6 +10,7 @@ import { ValidationError } from "@/lib/validate";
 import type { JobApplication, JobListFilter } from "@/types/job";
 
 export function useDashboardState() {
+  const { t } = useLocale();
   const [jobs, setJobs] = useState<JobApplication[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [importing, setImporting] = useState(false);
@@ -16,6 +19,7 @@ export function useDashboardState() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<JobListFilter>("All");
   const modals = useModalState();
+  const backupReminder = useBackupReminder(jobs.length);
 
   useEffect(() => {
     setJobs(readJobs());
@@ -65,6 +69,7 @@ export function useDashboardState() {
     anchor.download = `job-applications-${new Date().toISOString().slice(0, 10)}.json`;
     anchor.click();
     URL.revokeObjectURL(url);
+    backupReminder.acknowledgeExport();
   }
 
   async function handleImportBackup(file: File) {
@@ -80,13 +85,13 @@ export function useDashboardState() {
         return;
       }
       if (importError instanceof SyntaxError) {
-        setError("Import file is not valid JSON");
+        setError(t.errors.invalidJson);
         return;
       }
       setError(
         importError instanceof Error
           ? importError.message
-          : "Failed to import backup",
+          : t.errors.importBackupFailed,
       );
     }
   }
@@ -104,6 +109,8 @@ export function useDashboardState() {
     setStatusFilter,
     handleExport,
     handleImportBackup,
+    showBackupReminder: backupReminder.showReminder,
+    dismissBackupReminder: backupReminder.dismissReminder,
     ...modals,
     ...mutations,
   };

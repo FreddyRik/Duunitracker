@@ -6,11 +6,12 @@ import {
   validateCreateInput,
   validateUpdatePatch,
 } from "@/lib/job-validation";
+import { JOBS_STORAGE_KEY } from "@/lib/site-config";
+import { ensureStorageMigrated } from "@/lib/storage-migration";
 import { ValidationError } from "@/lib/validate";
 import type { CreateJobInput, JobApplication, UpdateJobInput } from "@/types/job";
 
-export const JOBS_STORAGE_KEY = "job-tracker-jobs";
-
+export { JOBS_STORAGE_KEY };
 export { ValidationError };
 
 function assertBrowser(): void {
@@ -58,11 +59,13 @@ function isJobApplication(value: unknown): value is JobApplication {
 
 function writeJobs(jobs: JobApplication[]): void {
   assertBrowser();
+  ensureStorageMigrated();
   window.localStorage.setItem(JOBS_STORAGE_KEY, `${JSON.stringify(jobs, null, 2)}\n`);
 }
 
 export function readJobs(): JobApplication[] {
   assertBrowser();
+  ensureStorageMigrated();
   const raw = window.localStorage.getItem(JOBS_STORAGE_KEY);
   if (!raw) {
     return [];

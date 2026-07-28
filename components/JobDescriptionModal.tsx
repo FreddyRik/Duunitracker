@@ -1,5 +1,6 @@
 "use client";
 
+import { useLocale } from "@/components/LocaleProvider";
 import { formatCompanyName } from "@/lib/format";
 import type { JobApplication } from "@/types/job";
 
@@ -8,7 +9,12 @@ type JobDescriptionModalProps = {
   onClose: () => void;
 };
 
-export function JobDescriptionModal({ job, onClose }: JobDescriptionModalProps) {
+export function JobDescriptionModal({
+  job,
+  onClose,
+}: JobDescriptionModalProps) {
+  const { t } = useLocale();
+
   if (!job) return null;
 
   return (
@@ -20,7 +26,9 @@ export function JobDescriptionModal({ job, onClose }: JobDescriptionModalProps) 
       >
         <div className="flex items-start justify-between gap-4 border-b border-border px-6 py-5">
           <div>
-            <h2 className="text-xl font-semibold text-foreground">{job.title}</h2>
+            <h2 className="text-xl font-semibold text-foreground">
+              {job.title}
+            </h2>
             <p className="mt-1 text-sm text-muted">
               {formatCompanyName(job.company)}
             </p>
@@ -29,7 +37,7 @@ export function JobDescriptionModal({ job, onClose }: JobDescriptionModalProps) 
             type="button"
             onClick={onClose}
             className="rounded-lg px-2 py-1 text-muted transition hover:bg-surface-muted hover:text-foreground"
-            aria-label="Close"
+            aria-label={t.actions.close}
           >
             ×
           </button>
@@ -41,7 +49,7 @@ export function JobDescriptionModal({ job, onClose }: JobDescriptionModalProps) 
               {job.description}
             </p>
           ) : (
-            <p className="text-sm text-muted">No description saved for this job.</p>
+            <p className="text-sm text-muted">{t.description.empty}</p>
           )}
         </div>
 
@@ -51,7 +59,7 @@ export function JobDescriptionModal({ job, onClose }: JobDescriptionModalProps) 
             onClick={onClose}
             className="rounded-xl border border-border-strong px-4 py-2 text-sm font-medium text-muted-strong transition hover:bg-surface-muted"
           >
-            Close
+            {t.actions.close}
           </button>
         </div>
       </div>

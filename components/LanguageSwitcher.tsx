@@ -1,39 +1,41 @@
 "use client";
 
-import { useLocale } from "@/components/LocaleProvider";
-import { THEMES, useTheme, type Theme } from "@/components/ThemeProvider";
+import {
+  LOCALES,
+  useLocale,
+  type Locale,
+} from "@/components/LocaleProvider";
 
-export function ThemeSwitcher() {
-  const { theme, setTheme } = useTheme();
-  const { t } = useLocale();
+const LABELS: Record<Locale, string> = {
+  fi: "FI",
+  en: "EN",
+};
 
-  const labels: Record<Theme, string> = {
-    light: t.theme.light,
-    dark: t.theme.dark,
-  };
+export function LanguageSwitcher() {
+  const { locale, setLocale, t } = useLocale();
 
   return (
     <div
       role="radiogroup"
-      aria-label={t.theme.ariaLabel}
+      aria-label={t.language.ariaLabel}
       className="inline-flex rounded-xl border border-border bg-surface-muted p-1"
     >
-      {THEMES.map((option) => {
-        const selected = theme === option;
+      {LOCALES.map((option) => {
+        const selected = locale === option;
         return (
           <button
             key={option}
             type="button"
             role="radio"
             aria-checked={selected}
-            onClick={() => setTheme(option)}
+            onClick={() => setLocale(option)}
             className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
               selected
                 ? "bg-accent text-accent-fg shadow-sm"
                 : "text-muted hover:text-foreground"
             }`}
           >
-            {labels[option]}
+            {LABELS[option]}
           </button>
         );
       })}

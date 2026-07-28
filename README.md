@@ -1,6 +1,6 @@
-# Job Application Tracker
+# Duunitracker
 
-A job application tracker built with Next.js and Tailwind CSS. Import Duunitori job postings, verify extracted details, and track application status in your browser.
+A Duunitori-focused job application tracker built with Next.js and Tailwind CSS. Import Duunitori job postings, verify extracted details, and track application status in your browser.
 
 ## Features
 
@@ -36,20 +36,23 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Data storage
 
-Jobs are stored in your browser's `localStorage` under the key `job-tracker-jobs`. Each person using the app only sees their own data on that device and browser.
+Jobs are stored in your browser's `localStorage` under the key `duunitracker-jobs`. Each person using the app only sees their own data on that device and browser.
 
 - Clearing site data removes your jobs unless you exported a backup.
 - Phone and laptop do not sync automatically.
 - Use **Import backup** to restore from a previously exported JSON file.
+- Different domains (for example an old and new Vercel URL) have separate `localStorage` — export from one and import on the other to move data.
 
 If you have an older `data/jobs.json` from a previous version, import that file with **Import backup**.
 
+On first load after the rename from Job Application Tracker, jobs and theme preferences are migrated automatically from the legacy `job-tracker-*` keys when present on the same origin.
+
 ## Deploy to Vercel
 
-1. Push this repo to GitHub.
+1. Push this repo to GitHub (`https://github.com/FreddyRik/duunitracker`).
 2. Import the project at [vercel.com/new](https://vercel.com/new).
 3. Deploy with default Next.js settings (no environment variables required).
-4. Share the `*.vercel.app` URL — each visitor's jobs stay in their own browser.
+4. Share your Vercel URL — each visitor's jobs stay in their own browser.
 
 ## API routes
 

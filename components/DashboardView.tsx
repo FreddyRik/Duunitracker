@@ -1,10 +1,13 @@
 "use client";
 
+import { BackupReminderBanner } from "@/components/BackupReminderBanner";
 import { DataBackupControls } from "@/components/DataBackupControls";
 import { JobDescriptionModal } from "@/components/JobDescriptionModal";
 import { JobFilters } from "@/components/JobFilters";
 import { JobFormModal } from "@/components/JobFormModal";
 import { JobList } from "@/components/JobList";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useLocale } from "@/components/LocaleProvider";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SummaryStats } from "@/components/SummaryStats";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
@@ -15,24 +18,25 @@ import { jobToFormValues } from "@/lib/job-form-mappers";
 type DashboardState = ReturnType<typeof useDashboardState>;
 
 export function DashboardView(state: DashboardState) {
+  const { t } = useLocale();
+
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-8 sm:px-6 lg:px-8">
       <header className="mb-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-accent">
-              Browser tracker
-            </p>
-            <h1 className="mt-2 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-              Job Application Tracker
+            <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+              {t.app.name}
             </h1>
             <p className="mt-3 max-w-2xl text-sm text-muted sm:text-base">
-              Import Duunitori postings or add jobs manually. Your applications
-              stay in this browser only.
+              {t.app.intro}
             </p>
           </div>
           <div className="flex flex-col items-start gap-3 sm:items-end">
-            <ThemeSwitcher />
+            <div className="flex flex-wrap items-center gap-2">
+              <LanguageSwitcher />
+              <ThemeSwitcher />
+            </div>
             <DataBackupControls
               jobCount={state.jobs.length}
               onExport={state.handleExport}
@@ -49,6 +53,13 @@ export function DashboardView(state: DashboardState) {
           onFilterChange={state.setStatusFilter}
         />
       </section>
+
+      {state.showBackupReminder && (
+        <BackupReminderBanner
+          onExport={state.handleExport}
+          onDismiss={state.dismissBackupReminder}
+        />
+      )}
 
       <section className="mb-8 rounded-2xl border border-border bg-surface p-5 shadow-sm backdrop-blur">
         <UrlImportBar

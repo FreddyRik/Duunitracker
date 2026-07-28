@@ -1,5 +1,7 @@
 "use client";
 
+import { useLocale } from "@/components/LocaleProvider";
+import { statusLabel } from "@/lib/i18n";
 import type { JobListFilter } from "@/types/job";
 import { JOB_STATUSES } from "@/types/job";
 
@@ -10,37 +12,39 @@ type JobFiltersProps = {
   onStatusFilterChange: (value: JobListFilter) => void;
 };
 
-const FILTER_OPTIONS: { value: JobListFilter; label: string }[] = [
-  { value: "All", label: "All statuses" },
-  { value: "InProgress", label: "In Progress" },
-  ...JOB_STATUSES.map((status) => ({
-    value: status as JobListFilter,
-    label: status,
-  })),
-];
-
 export function JobFilters({
   search,
   statusFilter,
   onSearchChange,
   onStatusFilterChange,
 }: JobFiltersProps) {
+  const { t } = useLocale();
+
+  const filterOptions: { value: JobListFilter; label: string }[] = [
+    { value: "All", label: t.filters.allStatuses },
+    { value: "InProgress", label: t.filters.inProgress },
+    ...JOB_STATUSES.map((status) => ({
+      value: status as JobListFilter,
+      label: statusLabel(t, status),
+    })),
+  ];
+
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
       <label className="sr-only" htmlFor="job-search">
-        Search jobs
+        {t.filters.searchLabel}
       </label>
       <input
         id="job-search"
         type="search"
         value={search}
         onChange={(event) => onSearchChange(event.target.value)}
-        placeholder="Search by title, company, or description..."
+        placeholder={t.filters.searchPlaceholder}
         className="w-full flex-1 rounded-xl border border-border-strong bg-surface-solid px-4 py-2.5 text-sm text-foreground shadow-sm outline-none transition focus:border-accent focus:ring-2 focus:ring-ring"
       />
 
       <label className="sr-only" htmlFor="status-filter">
-        Filter by status
+        {t.filters.statusLabel}
       </label>
       <select
         id="status-filter"
@@ -50,7 +54,7 @@ export function JobFilters({
         }
         className="rounded-xl border border-border-strong bg-surface-solid px-4 py-2.5 text-sm text-foreground shadow-sm outline-none transition focus:border-accent focus:ring-2 focus:ring-ring sm:min-w-[10rem]"
       >
-        {FILTER_OPTIONS.map((option) => (
+        {filterOptions.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
           </option>

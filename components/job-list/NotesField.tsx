@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useLocale } from "@/components/LocaleProvider";
 
 export function NotesField({
   notes,
@@ -9,6 +10,7 @@ export function NotesField({
   notes: string;
   onSave: (notes: string) => Promise<void>;
 }) {
+  const { t } = useLocale();
   const [expanded, setExpanded] = useState(notes.trim().length > 0);
   const hasNotes = notes.trim().length > 0;
 
@@ -19,7 +21,7 @@ export function NotesField({
         onClick={() => setExpanded(true)}
         className="text-xs font-medium text-muted transition hover:text-accent"
       >
-        + Note
+        {t.notes.add}
       </button>
     );
   }
@@ -35,7 +37,7 @@ export function NotesField({
           }
         }}
         rows={2}
-        placeholder="Add notes..."
+        placeholder={t.notes.placeholder}
         autoFocus={expanded && !hasNotes}
         className="w-full min-w-[10rem] rounded-lg border border-border-strong bg-surface-solid px-2.5 py-1.5 text-sm text-foreground outline-none transition focus:border-accent focus:ring-2 focus:ring-ring"
       />
@@ -45,7 +47,7 @@ export function NotesField({
           onClick={() => setExpanded(false)}
           className="text-xs text-muted transition hover:text-foreground"
         >
-          Cancel
+          {t.actions.cancel}
         </button>
       )}
     </div>

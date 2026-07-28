@@ -1,5 +1,6 @@
 "use client";
 
+import { useLocale } from "@/components/LocaleProvider";
 import { toDateInputValue } from "@/lib/format";
 import { JobFormField, inputClassName } from "@/components/JobFormField";
 import type { JobFormValues } from "@/types/job";
@@ -15,9 +16,13 @@ export function JobFormPrimaryFields({
   isUrlRequired,
   onPatch,
 }: Props) {
+  const { t } = useLocale();
+
   return (
     <>
-      <JobFormField label={isUrlRequired ? "Job URL" : "Job URL (optional)"}>
+      <JobFormField
+        label={isUrlRequired ? t.form.jobUrl : t.form.jobUrlOptional}
+      >
         <input
           type="url"
           required={isUrlRequired}
@@ -25,15 +30,15 @@ export function JobFormPrimaryFields({
           onChange={(event) => onPatch({ url: event.target.value })}
           placeholder={
             isUrlRequired
-              ? "https://duunitori.fi/..."
-              : "Link to the posting, if you have one"
+              ? t.form.urlPlaceholderRequired
+              : t.form.urlPlaceholderOptional
           }
           className={inputClassName}
         />
       </JobFormField>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <JobFormField label="Job title">
+        <JobFormField label={t.form.jobTitle}>
           <input
             type="text"
             required
@@ -43,7 +48,7 @@ export function JobFormPrimaryFields({
           />
         </JobFormField>
 
-        <JobFormField label="Company">
+        <JobFormField label={t.form.company}>
           <input
             type="text"
             required
@@ -55,7 +60,7 @@ export function JobFormPrimaryFields({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <JobFormField label="Location">
+        <JobFormField label={t.form.location}>
           <input
             type="text"
             value={values.location}
@@ -64,7 +69,7 @@ export function JobFormPrimaryFields({
           />
         </JobFormField>
 
-        <JobFormField label="Deadline">
+        <JobFormField label={t.form.deadline}>
           <input
             type="date"
             value={toDateInputValue(values.deadline)}
@@ -74,12 +79,12 @@ export function JobFormPrimaryFields({
         </JobFormField>
       </div>
 
-      <JobFormField label="Description">
+      <JobFormField label={t.form.description}>
         <textarea
           rows={10}
           value={values.description}
           onChange={(event) => onPatch({ description: event.target.value })}
-          placeholder="Job description is saved locally so you can review it after the posting expires."
+          placeholder={t.form.descriptionPlaceholder}
           className={`${inputClassName} resize-y`}
         />
       </JobFormField>

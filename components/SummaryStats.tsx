@@ -1,5 +1,6 @@
 "use client";
 
+import { useLocale } from "@/components/LocaleProvider";
 import type { JobApplication, JobListFilter } from "@/types/job";
 
 type SummaryStatsProps = {
@@ -19,22 +20,24 @@ export function SummaryStats({
   statusFilter,
   onFilterChange,
 }: SummaryStatsProps) {
+  const { t } = useLocale();
+
   const items: StatItem[] = [
-    { label: "Total Jobs", value: jobs.length, filter: "All" },
+    { label: t.stats.totalJobs, value: jobs.length, filter: "All" },
     {
-      label: "Applied",
+      label: t.stats.applied,
       value: jobs.filter((job) => job.status === "Applied").length,
       filter: "Applied",
     },
     {
-      label: "In Progress",
+      label: t.stats.inProgress,
       value: jobs.filter(
         (job) => job.status === "Interview" || job.status === "Offer",
       ).length,
       filter: "InProgress",
     },
     {
-      label: "Rejected",
+      label: t.stats.rejected,
       value: jobs.filter((job) => job.status === "Rejected").length,
       filter: "Rejected",
     },
@@ -46,7 +49,7 @@ export function SummaryStats({
         const active = statusFilter === item.filter;
         return (
           <button
-            key={item.label}
+            key={item.filter}
             type="button"
             onClick={() => onFilterChange(item.filter)}
             aria-pressed={active}
