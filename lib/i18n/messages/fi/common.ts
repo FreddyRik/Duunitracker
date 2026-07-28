@@ -3,6 +3,8 @@ import type { Messages } from "@/lib/i18n/types";
 export const fiCommon: Pick<
   Messages,
   | "meta"
+  | "landing"
+  | "privacy"
   | "app"
   | "theme"
   | "language"
@@ -22,8 +24,74 @@ export const fiCommon: Pick<
   | "errors"
 > = {
   meta: {
-    title: "Duunitracker",
-    description: "Seuraa Duunitori-hakemuksiasi selaimessa.",
+    title: "Duunitracker – Duunitori-hakemusten seuranta",
+    description:
+      "Ilmainen työhakemusten seurantatyökalu Duunitori-ilmoituksille. Tuo työpaikat linkistä, seuraa hakemusten tilaa ja tallenna muistiinpanot turvallisesti selaimessasi – ilman tiliä.",
+  },
+  landing: {
+    headline: "Duunitori-hakemusten seuranta selaimessa",
+    subhead:
+      "Tuo työpaikkailmoitukset Duunitorista, seuraa hakemustesi tilaa ja pidä muistiinpanot tallessa – kaikki data pysyy omassa selaimessasi.",
+    cta: "Avaa tracker",
+    howItWorksTitle: "Näin se toimii",
+    steps: [
+      {
+        title: "Liitä Duunitori-linkki",
+        body: "Kopioi työpaikkailmoituksen URL ja tuo tiedot automaattisesti trackeriin.",
+      },
+      {
+        title: "Seuraa hakemusten tilaa",
+        body: "Merkitse haetut paikat, päivitä tilat ja lisää haastattelu- sekä muistiinpanot.",
+      },
+      {
+        title: "Tallenna turvallisesti selaimeen",
+        body: "Ei tiliä eikä pilvitallennusta. Vie varmuuskopio, jos haluat siirtää dataa laitteelta toiselle.",
+      },
+    ],
+    privacyTitle: "Tietosi pysyvät omassa selaimessasi",
+    privacyBody:
+      "Duunitracker ei kerää hakemuksiasi palvelimelle. Kaikki tallennetaan paikallisesti localStorageen tässä selaimessa.",
+    privacyLink: "Lue tietosuojasta",
+  },
+  privacy: {
+    title: "Tietosuoja",
+    metaDescription:
+      "Miten Duunitracker käsittelee tietojasi: paikallinen tallennus selaimessa, ei tilejä eikä palvelinpuolen hakemusdataa.",
+    sections: [
+      {
+        heading: "Paikallinen tallennus",
+        paragraphs: [
+          "Duunitracker tallentaa työhakemuksesi, muistiinpanosi ja asetuksesi selaimen localStorageen. Tietoja ei lähetetä palvelimelle eikä jaeta muiden käyttäjien kanssa.",
+          "Jokainen laite ja selain pitää omat tietonsa erillään. Jos käytät sovellusta usealla laitteella, voit viedä ja tuoda JSON-varmuuskopion siirtääksesi dataa.",
+        ],
+      },
+      {
+        heading: "Tilit ja kirjautuminen",
+        paragraphs: [
+          "Sovellus ei vaadi käyttäjätiliä eikä kirjautumista. Emme kerää nimeäsi, sähköpostiosoitettasi tai hakemushistoriaasi palvelimillemme.",
+        ],
+      },
+      {
+        heading: "Duunitori-linkkien käsittely",
+        paragraphs: [
+          "Kun tuot työpaikan Duunitori-linkistä, palvelin lukee julkisen työpaikkasivun ja palauttaa parsitut tiedot selaimeesi. Emme tallenna tuotuja ilmoituksia palvelimelle pysyvästi.",
+        ],
+      },
+      {
+        heading: "Analytiikka",
+        paragraphs: [
+          "Sivusto voi käyttää Vercel Analytics -palvelua anonymisoituun kävijätilastointiin. Se ei sisällä hakemustietojasi.",
+        ],
+      },
+      {
+        heading: "Tietojen poistaminen",
+        paragraphs: [
+          "Voit poistaa kaikki tallennetut hakemukset tyhjentämällä tämän sivuston selaintiedot tai poistamalla hakemukset sovelluksen kautta. Vie varmuuskopio ennen tyhjennystä, jos haluat säilyttää tiedot.",
+        ],
+      },
+    ],
+    backToHome: "Takaisin etusivulle",
+    openTracker: "Avaa tracker",
   },
   app: {
     name: "Duunitracker",
@@ -39,6 +107,7 @@ export const fiCommon: Pick<
   footer: {
     privacy:
       "Tietosi pysyvät tässä selaimessa. Vie varmuuskopio ennen sivuston tietojen tyhjennystä.",
+    privacyPage: "Tietosuoja",
     github: "GitHub",
     source: "Lähdekoodi",
     reportIssue: "Ilmoita ongelmasta",

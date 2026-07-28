@@ -1,5 +1,21 @@
 export const APP_NAME = "Duunitracker";
 
+const DEFAULT_SITE_URL = "https://duunitracker.vercel.app";
+
+function resolveSiteUrl(): string {
+  if (process.env.NEXT_PUBLIC_SITE_URL) {
+    return process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, "");
+  }
+
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+
+  return DEFAULT_SITE_URL;
+}
+
+export const SITE_URL = resolveSiteUrl();
+
 export const GITHUB_PROFILE = "https://github.com/FreddyRik";
 export const GITHUB_REPO = "https://github.com/FreddyRik/duunitracker";
 export const GITHUB_ISSUES = `${GITHUB_REPO}/issues`;

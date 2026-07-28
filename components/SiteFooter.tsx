@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useLocale } from "@/components/LocaleProvider";
 import {
   GITHUB_ISSUES,
@@ -26,12 +27,27 @@ function FooterLink({
   );
 }
 
+function InternalFooterLink({
+  href,
+  children,
+}: {
+  href: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link href={href} className="text-muted transition hover:text-accent">
+      {children}
+    </Link>
+  );
+}
+
 export function SiteFooter() {
   const { t } = useLocale();
   const links = [
-    { label: t.footer.github, href: GITHUB_PROFILE },
-    { label: t.footer.source, href: GITHUB_REPO },
-    { label: t.footer.reportIssue, href: GITHUB_ISSUES },
+    { label: t.footer.privacyPage, href: "/privacy", internal: true },
+    { label: t.footer.github, href: GITHUB_PROFILE, internal: false },
+    { label: t.footer.source, href: GITHUB_REPO, internal: false },
+    { label: t.footer.reportIssue, href: GITHUB_ISSUES, internal: false },
   ];
 
   return (
@@ -51,7 +67,11 @@ export function SiteFooter() {
                 ·
               </span>
             )}
-            <FooterLink href={link.href}>{link.label}</FooterLink>
+            {link.internal ? (
+              <InternalFooterLink href={link.href}>{link.label}</InternalFooterLink>
+            ) : (
+              <FooterLink href={link.href}>{link.label}</FooterLink>
+            )}
           </span>
         ))}
       </nav>

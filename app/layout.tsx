@@ -3,7 +3,7 @@ import { Plus_Jakarta_Sans } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { LocaleProvider } from "@/components/LocaleProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import { fi } from "@/lib/i18n/messages/fi";
+import { createSiteMetadata } from "@/lib/seo/site-metadata";
 import {
   LEGACY_THEME_STORAGE_KEY,
   LOCALE_STORAGE_KEY,
@@ -17,10 +17,7 @@ const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: fi.meta.title,
-  description: fi.meta.description,
-};
+export const metadata: Metadata = createSiteMetadata();
 
 const themeInitScript = `
 (function () {

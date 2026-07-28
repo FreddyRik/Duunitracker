@@ -51,8 +51,17 @@ On first load after the rename from Job Application Tracker, jobs and theme pref
 
 1. Push this repo to GitHub (`https://github.com/FreddyRik/duunitracker`).
 2. Import the project at [vercel.com/new](https://vercel.com/new).
-3. Deploy with default Next.js settings (no environment variables required).
-4. Share your Vercel URL — each visitor's jobs stay in their own browser.
+3. Deploy with default Next.js settings.
+4. Set `NEXT_PUBLIC_SITE_URL` to your production URL (for example `https://duunitracker.vercel.app` or your custom domain). This powers canonical URLs, Open Graph links, `sitemap.xml`, and `robots.txt`.
+5. Share your Vercel URL — each visitor's jobs stay in their own browser.
+
+### SEO after deploy
+
+1. Open [Google Search Console](https://search.google.com/search-console) and add your production property.
+2. Submit `https://<your-domain>/sitemap.xml` (also listed in `robots.txt`).
+3. Optionally add the site in [Bing Webmaster Tools](https://www.bing.com/webmasters).
+4. Test link previews with a share debugger (for example Facebook Sharing Debugger or LinkedIn Post Inspector).
+5. Check Search Console after a few weeks for indexed pages (`/`, `/app`, `/privacy`) and query impressions.
 
 ## API routes
 

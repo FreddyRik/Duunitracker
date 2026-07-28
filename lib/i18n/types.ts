@@ -1,12 +1,40 @@
 import type { JobStatus, WorkType } from "@/types/job";
 
+export type LandingStep = {
+  title: string;
+  body: string;
+};
+
+export type PrivacySection = {
+  heading: string;
+  paragraphs: string[];
+};
+
 export type Messages = {
   meta: { title: string; description: string };
+  landing: {
+    headline: string;
+    subhead: string;
+    cta: string;
+    howItWorksTitle: string;
+    steps: LandingStep[];
+    privacyTitle: string;
+    privacyBody: string;
+    privacyLink: string;
+  };
+  privacy: {
+    title: string;
+    metaDescription: string;
+    sections: PrivacySection[];
+    backToHome: string;
+    openTracker: string;
+  };
   app: { name: string; intro: string };
   theme: { ariaLabel: string; light: string; dark: string };
   language: { ariaLabel: string };
   footer: {
     privacy: string;
+    privacyPage: string;
     github: string;
     source: string;
     reportIssue: string;
