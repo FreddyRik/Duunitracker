@@ -1,20 +1,6 @@
 # Duunitracker
 
-A Duunitori-focused job application tracker built with Next.js and Tailwind CSS. Import Duunitori job postings, verify extracted details, and track application status in your browser.
-
-## Features
-
-- Import jobs from `duunitori.fi` URLs with automatic field extraction
-- Browser persistence via `localStorage` (no database or account)
-- Track applied status, pipeline status, and notes
-- Edit or delete saved applications
-- Export and import JSON backups
-- Responsive dashboard (table on desktop, cards on mobile)
-
-## Requirements
-
-- Node.js 20+
-- npm
+Track Duunitori job applications in your browser. Import a posting from a link, follow status, and keep notes — data stays in `localStorage` (no accounts).
 
 ## Setup
 
@@ -23,73 +9,53 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000). Requires Node.js 20+.
 
 ## Usage
 
-1. Paste a Duunitori job URL into the import bar.
-2. Click **Import Job** and review the auto-filled modal.
-3. Save the job to add it to your tracker.
-4. Update applied status, status tags, and notes inline.
-5. Use **Edit** or **Delete** for full record changes.
-6. Use **Export backup** / **Import backup** to move data between browsers or devices.
+1. Paste a Duunitori job URL → **Import Job**
+2. Review the auto-filled fields → save
+3. Update status, notes, and dates from the dashboard
+4. **Export / Import backup** to move data between devices or browsers
 
-## Data storage
+Jobs live under the `duunitracker-jobs` key. Clearing site data deletes them unless you exported a backup. Domains (e.g. different Vercel URLs) do not share storage.
 
-Jobs are stored in your browser's `localStorage` under the key `duunitracker-jobs`. Each person using the app only sees their own data on that device and browser.
+## Deploy (Vercel)
 
-- Clearing site data removes your jobs unless you exported a backup.
-- Phone and laptop do not sync automatically.
-- Use **Import backup** to restore from a previously exported JSON file.
-- Different domains (for example an old and new Vercel URL) have separate `localStorage` — export from one and import on the other to move data.
+1. Import the GitHub repo at [vercel.com/new](https://vercel.com/new)
+2. Set env vars (see below) and redeploy after changing them
 
-If you have an older `data/jobs.json` from a previous version, import that file with **Import backup**.
+### Environment variables
 
-On first load after the rename from Job Application Tracker, jobs and theme preferences are migrated automatically from the legacy `job-tracker-*` keys when present on the same origin.
+| Variable | Required | Purpose |
+|----------|----------|---------|
+| `NEXT_PUBLIC_SITE_URL` | Yes (prod) | Canonical / SEO URLs (e.g. `https://duunitracker.vercel.app`) |
+| `NEXT_PUBLIC_DUUNITORI_PROXY_URL` | Yes (prod) | Cloudflare Worker that fetches Duunitori HTML (see below) |
+| `JINA_API_KEY` | No | Optional server-side fetch fallback for local/dev |
 
-## Deploy to Vercel
+Copy [`.env.example`](.env.example) for local values.
 
-1. Push this repo to GitHub (`https://github.com/FreddyRik/duunitracker`).
-2. Import the project at [vercel.com/new](https://vercel.com/new).
-3. Deploy with default Next.js settings.
-4. Set `NEXT_PUBLIC_SITE_URL` to your production URL (for example `https://duunitracker.vercel.app` or your custom domain). This powers canonical URLs, Open Graph links, `sitemap.xml`, and `robots.txt`.
-5. Deploy the Duunitori proxy Worker (see [workers/duunitori-proxy/README.md](workers/duunitori-proxy/README.md)) and set `NEXT_PUBLIC_DUUNITORI_PROXY_URL` to the Worker URL. This lets the browser fetch job HTML through Cloudflare instead of Vercel (avoids Cloudflare 403 on datacenter IPs).
-6. Share your Vercel URL — each visitor's jobs stay in their own browser.
+### Duunitori import on Vercel
 
-### SEO after deploy
+Vercel IPs are often blocked by Duunitori’s Cloudflare. Production import uses a Worker:
 
-1. Open [Google Search Console](https://search.google.com/search-console) and add your production property.
-2. Submit `https://<your-domain>/sitemap.xml` (also listed in `robots.txt`).
-3. Optionally add the site in [Bing Webmaster Tools](https://www.bing.com/webmasters).
-4. Test link previews with a share debugger (for example Facebook Sharing Debugger or LinkedIn Post Inspector).
-5. Check Search Console after a few weeks for indexed pages (`/`, `/app`, `/privacy`) and query impressions.
+1. Browser → Worker fetches HTML (`NEXT_PUBLIC_DUUNITORI_PROXY_URL`)
+2. Browser → `POST /api/parse-job` with `{ url, html }` (parse only)
 
-## API routes
+Deploy the Worker: [workers/duunitori-proxy/README.md](workers/duunitori-proxy/README.md)
 
-- `POST /api/parse-job` — parse a Duunitori job URL (`{ url }` fetches server-side, or `{ url, html }` parses pre-fetched HTML from the Worker proxy)
-
-## Duunitori import proxy (production)
-
-Vercel datacenter IPs are often blocked by Duunitori’s Cloudflare. Production import uses a small Cloudflare Worker:
-
-1. Browser → Worker (`NEXT_PUBLIC_DUUNITORI_PROXY_URL`) fetches HTML with CORS
-2. Browser → `/api/parse-job` with `{ url, html }` for parsing only (no Duunitori fetch from Vercel)
-
-Deploy steps: [workers/duunitori-proxy/README.md](workers/duunitori-proxy/README.md)
-
-Local dev without the proxy env var uses direct server-side fetch (works from your home IP).
+Locally, omit the proxy env — the API fetches Duunitori directly (and can fall back to Jina if configured).
 
 ## Scripts
 
 ```bash
-npm run dev    # start development server
-npm run build  # production build
-npm run start  # run production server
-npm run lint   # run ESLint
+npm run dev
+npm run build
+npm run start
+npm run lint
 ```
 
 ## Notes
 
-- **Production:** set `NEXT_PUBLIC_DUUNITORI_PROXY_URL` to your deployed Worker URL (see `workers/duunitori-proxy/`).
-- **Local (no proxy env):** job import fetches Duunitori directly from the dev server. If blocked, the server retries through [Jina Reader](https://jina.ai/reader) when `JINA_API_KEY` is set.
-- Scraping depends on Duunitori page structure; if parsing fails or fields are incomplete, edit values manually in the import modal.
+- Import depends on Duunitori page structure; edit fields manually if parsing is incomplete.
+- Already-saved flat descriptions stay flat until you re-import a job.

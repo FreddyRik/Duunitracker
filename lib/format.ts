@@ -103,9 +103,28 @@ export function formatCompanyName(name: string): string {
     .join(" ");
 }
 
+function normalizePlainTextLines(text: string): string {
+  const lines = text.split("\n").map((line) => line.replace(/[ \t]+/g, " ").trim());
+  return lines.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+}
+
+const BLOCK_END_TAGS =
+  "p|div|h[1-6]|section|article|tr|blockquote|pre|ul|ol|table|thead|tbody|tfoot";
+
 export function htmlToPlainText(html: string): string {
-  const text = cheerio.load(html).root().text();
-  return text.replace(/\s+/g, " ").trim();
+  const trimmed = html.trim();
+  if (!trimmed) {
+    return "";
+  }
+
+  const withBreaks = trimmed
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(new RegExp(`</(${BLOCK_END_TAGS})>`, "gi"), "\n\n")
+    .replace(/<li[^>]*>/gi, "\n- ")
+    .replace(/<\/li>/gi, "\n");
+
+  const text = cheerio.load(withBreaks).root().text();
+  return normalizePlainTextLines(text);
 }
 
 export function todayDateString(): string {

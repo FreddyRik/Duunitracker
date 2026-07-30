@@ -1,4 +1,5 @@
 import * as cheerio from "cheerio";
+import { htmlToPlainText } from "@/lib/format";
 import { normalizeText } from "@/lib/parse-duunitori/text";
 import type { ParsedJob } from "@/types/job";
 
@@ -90,6 +91,15 @@ export function parseHtmlFallback(html: string): Partial<ParsedJob> {
   return result;
 }
 
+function plainTextFromElementHtml(elementHtml: string | null): string | null {
+  if (!elementHtml) {
+    return null;
+  }
+
+  const text = htmlToPlainText(elementHtml);
+  return text.length > 0 ? text : null;
+}
+
 export function extractDescriptionFromHtml(html: string): string | null {
   const $ = cheerio.load(html);
 
@@ -103,7 +113,7 @@ export function extractDescriptionFromHtml(html: string): string | null {
 
   for (const selector of selectors) {
     const element = $(selector).first();
-    const text = normalizeText(element.text());
+    const text = plainTextFromElementHtml(element.html());
     if (text && text.length > 80) {
       return text;
     }
@@ -111,7 +121,7 @@ export function extractDescriptionFromHtml(html: string): string | null {
 
   let bestText: string | null = null;
   $("main p, main li, main div").each((_, element) => {
-    const text = normalizeText($(element).text());
+    const text = plainTextFromElementHtml($(element).html());
     if (!text || text.length < 80) return;
     if (!bestText || text.length > bestText.length) {
       bestText = text;
