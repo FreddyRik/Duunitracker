@@ -1,17 +1,26 @@
 import { NextResponse } from "next/server";
-import { parseDuunitoriJob } from "@/lib/parse-duunitori";
+import {
+  parseDuunitoriJob,
+  parseDuunitoriJobFromHtml,
+} from "@/lib/parse-duunitori";
+import type { ParseJobRequest } from "@/types/job";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as { url?: string };
+    const body = (await request.json()) as ParseJobRequest;
 
     if (!body.url || typeof body.url !== "string") {
       return NextResponse.json({ error: "URL is required" }, { status: 400 });
     }
 
-    const parsed = await parseDuunitoriJob(body.url.trim());
+    const url = body.url.trim();
+    const parsed =
+      typeof body.html === "string" && body.html.length > 0
+        ? parseDuunitoriJobFromHtml(url, body.html)
+        : await parseDuunitoriJob(url);
+
     return NextResponse.json(parsed);
   } catch (error) {
     const message =

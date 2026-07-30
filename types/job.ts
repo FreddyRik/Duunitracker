@@ -90,6 +90,7 @@ export type ApiErrorResponse = {
 
 export type ParseJobRequest = {
   url: string;
+  html?: string;
 };
 
 export type UpdateJobRequest = UpdateJobInput & {

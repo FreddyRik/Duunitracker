@@ -2,6 +2,7 @@ const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 
 const MAX_REDIRECTS = 5;
+const BLOCK_STATUSES = new Set([403, 429, 503]);
 
 function isDuunitoriHost(hostname: string): boolean {
   return hostname === "duunitori.fi" || hostname.endsWith(".duunitori.fi");
@@ -22,7 +23,36 @@ export function assertDuunitoriHttpsUrl(url: string): void {
   }
 }
 
-export async function fetchDuunitoriHtml(
+function isBlockedChallengePage(html: string): boolean {
+  return /Just a moment|cf-browser-verification|challenge-platform|Attention Required/i.test(
+    html,
+  );
+}
+
+function isValidJobPageHtml(html: string): boolean {
+  const trimmed = html.trim();
+  if (!trimmed) {
+    return false;
+  }
+
+  if (isBlockedChallengePage(trimmed)) {
+    return false;
+  }
+
+  return /<html/i.test(trimmed) || /JobPosting/i.test(trimmed);
+}
+
+function parseDirectFetchStatus(message: string): number | null {
+  const match = message.match(/Failed to fetch job page \((\d+)\)/);
+  if (!match) {
+    return null;
+  }
+
+  const status = Number(match[1]);
+  return Number.isFinite(status) ? status : null;
+}
+
+async function fetchDirectHtml(
   startUrl: string,
   signal: AbortSignal,
 ): Promise<string> {
@@ -59,4 +89,57 @@ export async function fetchDuunitoriHtml(
   }
 
   throw new Error("Too many redirects while fetching job page");
+}
+
+async function fetchViaJinaReader(
+  url: string,
+  signal: AbortSignal,
+): Promise<string> {
+  assertDuunitoriHttpsUrl(url);
+
+  const headers: Record<string, string> = {
+    Accept: "text/html,application/xhtml+xml",
+    "X-Respond-With": "html",
+    "X-No-Cache": "true",
+  };
+
+  const jinaApiKey = process.env.JINA_API_KEY;
+  if (jinaApiKey) {
+    headers.Authorization = `Bearer ${jinaApiKey}`;
+  }
+
+  const response = await fetch(`https://r.jina.ai/${url}`, {
+    headers,
+    signal,
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch job page via proxy (${response.status})`);
+  }
+
+  const html = await response.text();
+  if (!isValidJobPageHtml(html)) {
+    throw new Error("Failed to fetch job page via proxy (invalid HTML)");
+  }
+
+  return html;
+}
+
+export async function fetchDuunitoriHtml(
+  startUrl: string,
+  signal: AbortSignal,
+): Promise<string> {
+  try {
+    return await fetchDirectHtml(startUrl, signal);
+  } catch (error) {
+    if (error instanceof Error) {
+      const status = parseDirectFetchStatus(error.message);
+      if (status !== null && BLOCK_STATUSES.has(status)) {
+        return await fetchViaJinaReader(startUrl, signal);
+      }
+    }
+
+    throw error;
+  }
 }

@@ -53,7 +53,8 @@ On first load after the rename from Job Application Tracker, jobs and theme pref
 2. Import the project at [vercel.com/new](https://vercel.com/new).
 3. Deploy with default Next.js settings.
 4. Set `NEXT_PUBLIC_SITE_URL` to your production URL (for example `https://duunitracker.vercel.app` or your custom domain). This powers canonical URLs, Open Graph links, `sitemap.xml`, and `robots.txt`.
-5. Share your Vercel URL — each visitor's jobs stay in their own browser.
+5. Deploy the Duunitori proxy Worker (see [workers/duunitori-proxy/README.md](workers/duunitori-proxy/README.md)) and set `NEXT_PUBLIC_DUUNITORI_PROXY_URL` to the Worker URL. This lets the browser fetch job HTML through Cloudflare instead of Vercel (avoids Cloudflare 403 on datacenter IPs).
+6. Share your Vercel URL — each visitor's jobs stay in their own browser.
 
 ### SEO after deploy
 
@@ -65,7 +66,18 @@ On first load after the rename from Job Application Tracker, jobs and theme pref
 
 ## API routes
 
-- `POST /api/parse-job` — scrape and parse a Duunitori job URL
+- `POST /api/parse-job` — parse a Duunitori job URL (`{ url }` fetches server-side, or `{ url, html }` parses pre-fetched HTML from the Worker proxy)
+
+## Duunitori import proxy (production)
+
+Vercel datacenter IPs are often blocked by Duunitori’s Cloudflare. Production import uses a small Cloudflare Worker:
+
+1. Browser → Worker (`NEXT_PUBLIC_DUUNITORI_PROXY_URL`) fetches HTML with CORS
+2. Browser → `/api/parse-job` with `{ url, html }` for parsing only (no Duunitori fetch from Vercel)
+
+Deploy steps: [workers/duunitori-proxy/README.md](workers/duunitori-proxy/README.md)
+
+Local dev without the proxy env var uses direct server-side fetch (works from your home IP).
 
 ## Scripts
 
@@ -78,5 +90,6 @@ npm run lint   # run ESLint
 
 ## Notes
 
-- Scraping depends on Duunitori page structure and may be rate-limited from Vercel's servers.
-- If parsing fails or fields are incomplete, you can still edit values manually in the import modal.
+- **Production:** set `NEXT_PUBLIC_DUUNITORI_PROXY_URL` to your deployed Worker URL (see `workers/duunitori-proxy/`).
+- **Local (no proxy env):** job import fetches Duunitori directly from the dev server. If blocked, the server retries through [Jina Reader](https://jina.ai/reader) when `JINA_API_KEY` is set.
+- Scraping depends on Duunitori page structure; if parsing fails or fields are incomplete, edit values manually in the import modal.

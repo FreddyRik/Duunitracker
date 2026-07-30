@@ -32,6 +32,11 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
+.env.local
+
+# cloudflare workers
+workers/**/node_modules
 
 # local personal job data (never commit applications)
 /data/jobs.json
