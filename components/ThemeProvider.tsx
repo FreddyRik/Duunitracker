@@ -17,7 +17,7 @@ export const THEMES = ["light", "dark"] as const;
 export type Theme = (typeof THEMES)[number];
 
 export { THEME_STORAGE_KEY };
-export const DEFAULT_THEME: Theme = "dark";
+export const DEFAULT_THEME: Theme = "light";
 
 type ThemeContextValue = {
   theme: Theme;

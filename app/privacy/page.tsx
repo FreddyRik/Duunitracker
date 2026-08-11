@@ -9,14 +9,14 @@ export const metadata = createSiteMetadata({
 });
 
 export default function PrivacyPage() {
-  const { privacy } = fi;
+  const { privacy, app } = fi;
 
   return (
     <div className="min-h-full">
       <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 py-16 sm:px-6 lg:px-8">
-        <header className="mb-10">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-accent">
-            Duunitracker
+        <header className="mb-10 border-b border-border pb-8">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-muted">
+            {app.name}
           </p>
           <h1 className="mt-4 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             {privacy.title}
@@ -29,7 +29,7 @@ export default function PrivacyPage() {
               <h2 className="text-xl font-semibold text-foreground">
                 {section.heading}
               </h2>
-              <div className="mt-3 space-y-3 text-base text-muted">
+              <div className="mt-3 space-y-3 text-base leading-relaxed text-muted">
                 {section.paragraphs.map((paragraph) => (
                   <p key={paragraph}>{paragraph}</p>
                 ))}
@@ -38,16 +38,16 @@ export default function PrivacyPage() {
           ))}
         </div>
 
-        <div className="mt-12 flex flex-wrap gap-4">
+        <div className="mt-12 flex flex-wrap gap-3 border-t border-border pt-8">
           <Link
             href="/"
-            className="inline-flex items-center justify-center rounded-xl border border-border bg-surface px-5 py-2.5 text-sm font-medium text-foreground transition hover:border-border-strong"
+            className="inline-flex items-center justify-center rounded-md border border-border-strong px-5 py-2.5 text-sm font-medium text-foreground transition hover:bg-surface-muted"
           >
             {privacy.backToHome}
           </Link>
           <Link
             href="/app"
-            className="inline-flex items-center justify-center rounded-xl bg-accent px-5 py-2.5 text-sm font-semibold text-accent-fg transition hover:bg-accent-hover"
+            className="inline-flex items-center justify-center rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-accent-fg transition hover:bg-accent-hover"
           >
             {privacy.openTracker}
           </Link>

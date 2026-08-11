@@ -16,7 +16,7 @@ export function ThemeSwitcher() {
     <div
       role="radiogroup"
       aria-label={t.theme.ariaLabel}
-      className="inline-flex rounded-xl border border-border bg-surface-muted p-1"
+      className="inline-flex rounded-md border border-border p-0.5"
     >
       {THEMES.map((option) => {
         const selected = theme === option;
@@ -27,9 +27,9 @@ export function ThemeSwitcher() {
             role="radio"
             aria-checked={selected}
             onClick={() => setTheme(option)}
-            className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+            className={`rounded-sm px-3 py-1.5 text-xs font-semibold transition ${
               selected
-                ? "bg-accent text-accent-fg shadow-sm"
+                ? "bg-accent text-accent-fg"
                 : "text-muted hover:text-foreground"
             }`}
           >

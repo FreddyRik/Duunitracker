@@ -5,6 +5,13 @@ export type LandingStep = {
   body: string;
 };
 
+/** Illustrative rows for the landing hero preview. Not real postings. */
+export type LandingPreviewJob = {
+  title: string;
+  company: string;
+  deadline: string;
+};
+
 export type PrivacySection = {
   heading: string;
   paragraphs: string[];
@@ -16,6 +23,10 @@ export type Messages = {
     headline: string;
     subhead: string;
     cta: string;
+    eyebrow: string;
+    scrollHint: string;
+    previewLabel: string;
+    previewJobs: LandingPreviewJob[];
     howItWorksTitle: string;
     steps: LandingStep[];
     privacyTitle: string;
@@ -102,8 +113,7 @@ export type Messages = {
     dueToday: string;
     dueTomorrow: string;
     dueInDays: string;
-    overdueOne: string;
-    overdueMany: string;
+    expired: string;
   };
   form: {
     confirmImport: string;
@@ -139,6 +149,14 @@ export type Messages = {
   };
   description: {
     empty: string;
+  };
+  ui: {
+    moreActions: string;
+    all: string;
+    commandHint: string;
+    clearFilters: string;
+    details: string;
+    notesSaved: string;
   };
   errors: {
     invalidJson: string;

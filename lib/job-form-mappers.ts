@@ -1,4 +1,4 @@
-import { toDateInputValue } from "@/lib/format";
+import { toDateInputValue, todayDateString } from "@/lib/format";
 import type {
   CreateJobInput,
   JobApplication,
@@ -87,7 +87,29 @@ export function jobToFormValues(job: JobApplication): JobFormValues {
   };
 }
 
+export function buildAppliedFieldPatch(
+  applied: boolean,
+  values: Pick<JobFormValues, "status" | "dateApplied">,
+): Partial<JobFormValues> {
+  if (applied) {
+    return {
+      applied: true,
+      status: "Applied",
+      dateApplied: values.dateApplied || todayDateString(),
+    };
+  }
+
+  return {
+    applied: false,
+    status: values.status === "Applied" ? "Saved" : values.status,
+    dateApplied: "",
+  };
+}
+
 export function formValuesToPayload(values: JobFormValues): CreateJobInput {
+  const status =
+    values.applied && values.status === "Saved" ? "Applied" : values.status;
+
   return {
     url: values.url.trim(),
     title: values.title,
@@ -95,7 +117,7 @@ export function formValuesToPayload(values: JobFormValues): CreateJobInput {
     location: values.location || null,
     deadline: values.deadline || null,
     applied: values.applied,
-    status: values.status,
+    status,
     notes: values.notes,
     dateApplied: values.applied ? values.dateApplied || undefined : null,
     interviewDate: values.interviewDate || null,

@@ -9,5 +9,6 @@ export type JobListHandlers = {
   ) => Promise<boolean | void>;
   onEdit: (job: JobApplication) => void;
   onDelete: (id: string) => Promise<void>;
-  onViewDescription: (job: JobApplication) => void;
+  /** Opens the detail panel for a job. */
+  onOpen: (job: JobApplication) => void;
 };

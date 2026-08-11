@@ -2,103 +2,149 @@
 
 :root,
 [data-theme="light"] {
-  --background: #f4f7f8;
-  --foreground: #0f172a;
-  --surface: rgba(255, 255, 255, 0.9);
+  --background: #f7f7f5;
+  --foreground: #141413;
+  --surface: transparent;
   --surface-solid: #ffffff;
-  --surface-muted: #f8fafc;
-  --border: #e2e8f0;
-  --border-strong: #cbd5e1;
-  --accent: #0f766e;
-  --accent-hover: #115e59;
-  --accent-fg: #ffffff;
-  --accent-soft: rgba(15, 118, 110, 0.12);
-  --muted: #64748b;
-  --muted-strong: #475569;
-  --danger: #be123c;
-  --danger-bg: #fff1f2;
-  --danger-border: #fecdd3;
-  --overlay: rgba(2, 6, 23, 0.5);
-  --ring: rgba(20, 184, 166, 0.25);
-  --page-gradient: radial-gradient(
-    circle at top,
-    #d9f3ef 0%,
-    #f4f7f8 38%,
-    #eef2f4 100%
+  --surface-muted: #efefec;
+  --border: #e4e4e0;
+  --border-strong: #cfcfc8;
+  --accent: #141413;
+  --accent-hover: #2a2a27;
+  --accent-fg: #f7f7f5;
+  --accent-soft: rgba(20, 20, 19, 0.06);
+  --muted: #6b6b66;
+  --muted-strong: #4a4a46;
+  --danger: #b42318;
+  --danger-bg: #fef3f2;
+  --danger-border: #fecdca;
+  --overlay: rgba(20, 20, 19, 0.32);
+  --ring: rgba(20, 20, 19, 0.18);
+  --page-gradient: linear-gradient(
+    180deg,
+    #fafaf8 0%,
+    #f7f7f5 48%,
+    #f3f3f0 100%
   );
-  --toggle-off: #cbd5e1;
-  --input-disabled: #f1f5f9;
+  --toggle-off: #cfcfc8;
+  --input-disabled: #efefec;
 
-  --badge-saved-bg: #f1f5f9;
-  --badge-saved-fg: #334155;
-  --badge-applied-bg: #e0f2fe;
-  --badge-applied-fg: #075985;
-  --badge-interview-bg: #fef3c7;
-  --badge-interview-fg: #92400e;
-  --badge-rejected-bg: #ffe4e6;
-  --badge-rejected-fg: #9f1239;
-  --badge-offer-bg: #d1fae5;
-  --badge-offer-fg: #065f46;
-  --badge-remote-bg: #ede9fe;
-  --badge-remote-fg: #5b21b6;
-  --badge-hybrid-bg: #e0e7ff;
-  --badge-hybrid-fg: #3730a3;
-  --badge-onsite-bg: #ffedd5;
-  --badge-onsite-fg: #9a3412;
-  --badge-deadline-bg: #f1f5f9;
-  --badge-deadline-fg: #475569;
-  --badge-deadline-urgent-bg: #fef3c7;
-  --badge-deadline-urgent-fg: #b45309;
+  /* Status: a progression, not a rainbow. */
+  --status-saved: #9a9a94;
+  --status-applied: #3b7dd8;
+  --status-interview: #d9880a;
+  --status-offer: #12916a;
+  --status-rejected: #b08a86;
+
+  --status-saved-wash: rgba(154, 154, 148, 0.12);
+  --status-applied-wash: rgba(59, 125, 216, 0.12);
+  --status-interview-wash: rgba(217, 136, 10, 0.12);
+  --status-offer-wash: rgba(18, 145, 106, 0.12);
+  --status-rejected-wash: rgba(176, 138, 134, 0.12);
+
+  --rail-track: #e4e4e0;
+  --row-hover: rgba(20, 20, 19, 0.03);
+  --row-active: rgba(20, 20, 19, 0.05);
+  --scrim: rgba(20, 20, 19, 0.28);
+
+  --badge-saved-bg: #f0f0ed;
+  --badge-saved-fg: #4a4a46;
+  --badge-applied-bg: #e8f1f8;
+  --badge-applied-fg: #1e4a6e;
+  --badge-interview-bg: #f7f0e0;
+  --badge-interview-fg: #6b4e12;
+  --badge-rejected-bg: #f8eaea;
+  --badge-rejected-fg: #8a2e2e;
+  --badge-offer-bg: #e6f2ea;
+  --badge-offer-fg: #1f5c3a;
+  --badge-remote-bg: #eeeaf6;
+  --badge-remote-fg: #4a3a6b;
+  --badge-hybrid-bg: #eaeef8;
+  --badge-hybrid-fg: #33406b;
+  --badge-onsite-bg: #f5ebe3;
+  --badge-onsite-fg: #6b3f1f;
+  --badge-deadline-bg: #f0f0ed;
+  --badge-deadline-fg: #4a4a46;
+  --badge-deadline-urgent-bg: #f7f0e0;
+  --badge-deadline-urgent-fg: #8a5a10;
 }
 
 [data-theme="dark"] {
-  --background: #0b1220;
-  --foreground: #e2e8f0;
-  --surface: rgba(15, 23, 42, 0.92);
-  --surface-solid: #111827;
-  --surface-muted: #1e293b;
-  --border: #334155;
-  --border-strong: #475569;
-  --accent: #2dd4bf;
-  --accent-hover: #5eead4;
-  --accent-fg: #042f2e;
-  --accent-soft: rgba(45, 212, 191, 0.15);
-  --muted: #94a3b8;
-  --muted-strong: #cbd5e1;
-  --danger: #fb7185;
-  --danger-bg: rgba(244, 63, 94, 0.15);
-  --danger-border: rgba(251, 113, 133, 0.35);
-  --overlay: rgba(2, 6, 23, 0.7);
-  --ring: rgba(45, 212, 191, 0.3);
-  --page-gradient: radial-gradient(
-    circle at top,
-    #132033 0%,
-    #0b1220 42%,
-    #080d16 100%
+  --background: #0c0c0b;
+  --foreground: #f2f2f0;
+  --surface: transparent;
+  --surface-solid: #121211;
+  --surface-muted: #1a1a18;
+  --border: #2a2a27;
+  --border-strong: #3d3d38;
+  --accent: #f2f2f0;
+  --accent-hover: #ffffff;
+  --accent-fg: #0c0c0b;
+  --accent-soft: rgba(242, 242, 240, 0.08);
+  --muted: #8a8a84;
+  --muted-strong: #b0b0a8;
+  --danger: #f97066;
+  --danger-bg: rgba(180, 35, 24, 0.18);
+  --danger-border: rgba(249, 112, 102, 0.35);
+  --overlay: rgba(0, 0, 0, 0.6);
+  --ring: rgba(242, 242, 240, 0.22);
+  --page-gradient: linear-gradient(
+    180deg,
+    #10100e 0%,
+    #0c0c0b 48%,
+    #090908 100%
   );
-  --toggle-off: #475569;
-  --input-disabled: #1e293b;
+  --toggle-off: #3d3d38;
+  --input-disabled: #1a1a18;
 
-  --badge-saved-bg: rgba(148, 163, 184, 0.18);
-  --badge-saved-fg: #cbd5e1;
-  --badge-applied-bg: rgba(56, 189, 248, 0.18);
-  --badge-applied-fg: #7dd3fc;
-  --badge-interview-bg: rgba(251, 191, 36, 0.18);
-  --badge-interview-fg: #fcd34d;
-  --badge-rejected-bg: rgba(251, 113, 133, 0.18);
-  --badge-rejected-fg: #fda4af;
-  --badge-offer-bg: rgba(52, 211, 153, 0.18);
-  --badge-offer-fg: #6ee7b7;
-  --badge-remote-bg: rgba(167, 139, 250, 0.18);
-  --badge-remote-fg: #c4b5fd;
-  --badge-hybrid-bg: rgba(129, 140, 248, 0.18);
-  --badge-hybrid-fg: #a5b4fc;
-  --badge-onsite-bg: rgba(251, 146, 60, 0.18);
-  --badge-onsite-fg: #fdba74;
-  --badge-deadline-bg: rgba(148, 163, 184, 0.18);
-  --badge-deadline-fg: #cbd5e1;
-  --badge-deadline-urgent-bg: rgba(251, 191, 36, 0.22);
-  --badge-deadline-urgent-fg: #fcd34d;
+  --status-saved: #9d9d96;
+  --status-applied: #6aa5ea;
+  --status-interview: #eda92f;
+  --status-offer: #3cbb8d;
+  --status-rejected: #c39d99;
+
+  --status-saved-wash: rgba(157, 157, 150, 0.16);
+  --status-applied-wash: rgba(106, 165, 234, 0.16);
+  --status-interview-wash: rgba(237, 169, 47, 0.16);
+  --status-offer-wash: rgba(60, 187, 141, 0.16);
+  --status-rejected-wash: rgba(195, 157, 153, 0.16);
+
+  --rail-track: #2a2a27;
+  --row-hover: rgba(242, 242, 240, 0.035);
+  --row-active: rgba(242, 242, 240, 0.06);
+  --scrim: rgba(0, 0, 0, 0.5);
+
+  --badge-saved-bg: rgba(176, 176, 168, 0.14);
+  --badge-saved-fg: #c8c8c0;
+  --badge-applied-bg: rgba(90, 150, 200, 0.16);
+  --badge-applied-fg: #9ec4e0;
+  --badge-interview-bg: rgba(200, 160, 70, 0.16);
+  --badge-interview-fg: #e0c888;
+  --badge-rejected-bg: rgba(200, 90, 90, 0.16);
+  --badge-rejected-fg: #e8a0a0;
+  --badge-offer-bg: rgba(80, 160, 110, 0.16);
+  --badge-offer-fg: #9ed4b0;
+  --badge-remote-bg: rgba(150, 130, 190, 0.16);
+  --badge-remote-fg: #c4b8e0;
+  --badge-hybrid-bg: rgba(120, 140, 190, 0.16);
+  --badge-hybrid-fg: #b0bce0;
+  --badge-onsite-bg: rgba(190, 130, 90, 0.16);
+  --badge-onsite-fg: #e0b898;
+  --badge-deadline-bg: rgba(176, 176, 168, 0.14);
+  --badge-deadline-fg: #c8c8c0;
+  --badge-deadline-urgent-bg: rgba(200, 160, 70, 0.2);
+  --badge-deadline-urgent-fg: #e0c888;
+}
+
+/* One spring, used everywhere, so the app has a single physical signature. */
+:root {
+  --ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 140ms;
+  --dur-base: 220ms;
+  --dur-panel: 320ms;
+  --panel-width: 440px;
+  --header-h: 56px;
 }
 
 @theme inline {
@@ -119,9 +165,23 @@
   --color-danger-bg: var(--danger-bg);
   --color-danger-border: var(--danger-border);
   --color-overlay: var(--overlay);
+  --color-scrim: var(--scrim);
   --color-ring: var(--ring);
   --color-toggle-off: var(--toggle-off);
   --color-input-disabled: var(--input-disabled);
+  --color-rail-track: var(--rail-track);
+  --color-row-hover: var(--row-hover);
+  --color-row-active: var(--row-active);
+  --color-status-saved: var(--status-saved);
+  --color-status-applied: var(--status-applied);
+  --color-status-interview: var(--status-interview);
+  --color-status-offer: var(--status-offer);
+  --color-status-rejected: var(--status-rejected);
+  --color-status-saved-wash: var(--status-saved-wash);
+  --color-status-applied-wash: var(--status-applied-wash);
+  --color-status-interview-wash: var(--status-interview-wash);
+  --color-status-offer-wash: var(--status-offer-wash);
+  --color-status-rejected-wash: var(--status-rejected-wash);
   --color-badge-saved-bg: var(--badge-saved-bg);
   --color-badge-saved-fg: var(--badge-saved-fg);
   --color-badge-applied-bg: var(--badge-applied-bg);
@@ -142,7 +202,8 @@
   --color-badge-deadline-fg: var(--badge-deadline-fg);
   --color-badge-deadline-urgent-bg: var(--badge-deadline-urgent-bg);
   --color-badge-deadline-urgent-fg: var(--badge-deadline-urgent-fg);
-  --font-sans: var(--font-plus-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-ibm-plex-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-ibm-plex-mono), ui-monospace, SFMono-Regular, monospace;
 }
 
 body {
@@ -150,4 +211,380 @@ body {
   background-attachment: fixed;
   color: var(--foreground);
   min-height: 100%;
+  line-height: 1.6;
+  font-variant-numeric: tabular-nums;
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+::selection {
+  background: var(--accent-soft);
+}
+
+/* Inset focus rings never shift layout or bleed past a container edge. */
+:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 1.5px var(--accent);
+}
+
+/* Near-invisible scrollbars that surface only on hover. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+*:hover {
+  scrollbar-color: var(--border-strong) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 999px;
+  transition: background var(--dur-base) ease;
+}
+
+*:hover::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+}
+
+/* App motion */
+@keyframes rail-fill {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes command-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes panel-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes shimmer {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(300%);
+  }
+}
+
+@keyframes urgent-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.82);
+  }
+}
+
+@keyframes save-flash {
+  from {
+    border-color: var(--status-offer);
+  }
+  to {
+    border-color: var(--border-strong);
+  }
+}
+
+.animate-pop-in {
+  animation: pop-in var(--dur-fast) var(--ease-spring) both;
+}
+
+.animate-fade-in {
+  animation: fade-in var(--dur-base) var(--ease-out) both;
+}
+
+.animate-command-in {
+  animation: command-in var(--dur-base) var(--ease-spring) both;
+}
+
+.animate-panel-in {
+  animation: panel-in var(--dur-panel) var(--ease-spring) both;
+}
+
+.animate-shimmer {
+  animation: shimmer 1.1s var(--ease-out) infinite;
+}
+
+/* Capped at three cycles so urgency never becomes ambient noise. */
+.animate-urgent {
+  animation: urgent-pulse 2s var(--ease-out) 3;
+}
+
+.animate-save-flash {
+  animation: save-flash 600ms var(--ease-out) both;
+}
+
+.rail-segment {
+  transform-origin: bottom;
+  animation: rail-fill var(--dur-base) var(--ease-spring) both;
+}
+
+/* Landing motion */
+@keyframes landing-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes landing-cta-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+  40% {
+    box-shadow: 0 0 0 3px var(--ring);
+  }
+}
+
+.landing-rise {
+  opacity: 0;
+  animation: landing-rise 0.7s var(--ease-out) forwards;
+}
+
+.landing-rise-delay-1 {
+  animation-delay: 0.08s;
+}
+
+.landing-rise-delay-2 {
+  animation-delay: 0.18s;
+}
+
+.landing-rise-delay-3 {
+  animation-delay: 0.28s;
+}
+
+.landing-rise-delay-4 {
+  animation-delay: 0.4s;
+}
+
+.landing-cta {
+  position: relative;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.landing-cta::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -6px;
+  width: 0;
+  height: 1px;
+  background: var(--accent);
+  transition: width 0.35s var(--ease-out);
+}
+
+.landing-cta:hover::after,
+.landing-cta:focus-visible::after {
+  width: 100%;
+}
+
+.landing-cta-pulse {
+  animation: landing-cta-pulse 1.6s ease-out 0.9s 1;
+}
+
+.landing-step {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.55s var(--ease-out),
+    transform 0.55s var(--ease-out);
+}
+
+.landing-step.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Hero entrance. Delays are set inline so the stagger is server-rendered. */
+@keyframes landing-word-up {
+  from {
+    transform: translateY(130%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes landing-frame-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes landing-row-in {
+  from {
+    opacity: 0;
+    transform: translateX(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes landing-scroll-cue {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.55;
+  }
+  50% {
+    transform: translateY(5px);
+    opacity: 1;
+  }
+}
+
+/*
+ * Tight leading would clip glyphs against the mask edge, so the box is padded
+ * out and pulled back in. The slide starts past that padding to avoid a sliver.
+ */
+.landing-word-mask {
+  display: inline-block;
+  overflow: hidden;
+  padding-top: 0.05em;
+  margin-top: -0.05em;
+  padding-bottom: 0.12em;
+  margin-bottom: -0.12em;
+  vertical-align: bottom;
+}
+
+.landing-word {
+  display: inline-block;
+  transform: translateY(130%);
+  animation: landing-word-up 0.85s var(--ease-spring) both;
+}
+
+.landing-frame {
+  opacity: 0;
+  animation: landing-frame-in 0.8s var(--ease-spring) both;
+}
+
+.landing-row {
+  opacity: 0;
+  animation: landing-row-in 0.6s var(--ease-spring) both;
+}
+
+.landing-scroll-cue {
+  animation: landing-scroll-cue 2.2s var(--ease-out) infinite;
+}
+
+/* Wash that decays after the preview's featured row advances a status. */
+@keyframes landing-beat {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.landing-beat {
+  animation: landing-beat 900ms var(--ease-out) both;
+}
+
+/* Hairline grid, faded out radially so it never competes with the type. */
+.landing-grid {
+  background-image:
+    repeating-linear-gradient(
+      to right,
+      var(--border) 0 1px,
+      transparent 1px 72px
+    ),
+    repeating-linear-gradient(
+      to bottom,
+      var(--border) 0 1px,
+      transparent 1px 72px
+    );
+  mask-image: radial-gradient(
+    ellipse 80% 60% at 50% 0%,
+    #000 0%,
+    transparent 75%
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .landing-rise,
+  .landing-step,
+  .landing-word,
+  .landing-frame,
+  .landing-row {
+    opacity: 1;
+    transform: none;
+  }
 }

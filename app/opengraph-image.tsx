@@ -20,10 +20,10 @@ export default function OpenGraphImage() {
           flexDirection: "column",
           justifyContent: "space-between",
           padding: "72px 80px",
-          background:
-            "radial-gradient(circle at top, #132033 0%, #0b1220 42%, #080d16 100%)",
-          color: "#e2e8f0",
+          background: "linear-gradient(180deg, #fafaf8 0%, #f7f7f5 48%, #f3f3f0 100%)",
+          color: "#141413",
           fontFamily: "system-ui, sans-serif",
+          border: "1px solid #e4e4e0",
         }}
       >
         <div
@@ -31,22 +31,23 @@ export default function OpenGraphImage() {
             display: "flex",
             alignItems: "center",
             gap: 16,
-            fontSize: 28,
+            fontSize: 36,
             fontWeight: 700,
-            color: "#2dd4bf",
+            letterSpacing: "-0.03em",
+            color: "#141413",
           }}
         >
           <div
             style={{
-              width: 56,
-              height: 56,
-              borderRadius: 14,
+              width: 52,
+              height: 52,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              background: "linear-gradient(135deg, #0f766e 0%, #134e4a 100%)",
-              color: "#ffffff",
-              fontSize: 30,
+              background: "#141413",
+              color: "#f7f7f5",
+              fontSize: 28,
+              fontWeight: 700,
             }}
           >
             D
@@ -56,25 +57,34 @@ export default function OpenGraphImage() {
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
           <div
             style={{
-              fontSize: 64,
-              fontWeight: 700,
-              lineHeight: 1.05,
+              fontSize: 56,
+              fontWeight: 600,
+              lineHeight: 1.1,
               letterSpacing: "-0.03em",
               maxWidth: 900,
+              color: "#141413",
             }}
           >
             {fi.landing.headline}
           </div>
           <div
             style={{
-              fontSize: 30,
-              lineHeight: 1.35,
-              color: "#94a3b8",
+              fontSize: 28,
+              lineHeight: 1.4,
+              color: "#6b6b66",
               maxWidth: 920,
             }}
           >
             {fi.landing.subhead}
           </div>
+          <div
+            style={{
+              marginTop: 12,
+              width: 64,
+              height: 1,
+              background: "#141413",
+            }}
+          />
         </div>
       </div>
     ),

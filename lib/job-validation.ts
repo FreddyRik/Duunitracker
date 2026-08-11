@@ -3,6 +3,32 @@ import { assertSafeHttpUrl, ValidationError } from "@/lib/validate";
 import type { CreateJobInput, JobApplication, UpdateJobInput } from "@/types/job";
 import { JOB_STATUSES, WORK_TYPES } from "@/types/job";
 
+export function applyAppliedSideEffects(
+  existing: JobApplication,
+  patch: UpdateJobInput,
+): UpdateJobInput {
+  if (patch.applied === undefined) {
+    return patch;
+  }
+
+  const next: UpdateJobInput = { ...patch };
+
+  if (patch.applied === true) {
+    if (next.dateApplied === undefined && !existing.dateApplied) {
+      next.dateApplied = todayDateString();
+    }
+    if (patch.status === undefined && existing.status === "Saved") {
+      next.status = "Applied";
+    }
+  } else if (patch.applied === false && patch.status === undefined) {
+    if (existing.status === "Applied") {
+      next.status = "Saved";
+    }
+  }
+
+  return next;
+}
+
 export function applyStatusSideEffects(
   existing: JobApplication,
   patch: UpdateJobInput,

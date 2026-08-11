@@ -22,9 +22,6 @@ type MutationSetters = {
   setCreateDraft: (value: JobFormValues | null) => void;
   setCreateMode: (value: "import" | "manual") => void;
   setCreateModalOpen: (value: boolean) => void;
-  setEditModalOpen: (value: boolean) => void;
-  setEditingJob: (value: JobApplication | null) => void;
-  editingJob: JobApplication | null;
 };
 
 export function useJobMutations(setters: MutationSetters) {
@@ -37,9 +34,6 @@ export function useJobMutations(setters: MutationSetters) {
     setCreateDraft,
     setCreateMode,
     setCreateModalOpen,
-    setEditModalOpen,
-    setEditingJob,
-    editingJob,
   } = setters;
 
   async function handleImport(url: string) {
@@ -99,19 +93,15 @@ export function useJobMutations(setters: MutationSetters) {
     }
   }
 
-  async function handleEditSave(values: JobFormValues) {
-    if (!editingJob) return;
+  /** Saves the detail panel's edit form. Returns false so callers can stay open. */
+  async function handleEditSave(
+    id: string,
+    values: JobFormValues,
+  ): Promise<boolean> {
     setSaving(true);
     setError(null);
     try {
-      const updated = await handleUpdateJob(
-        editingJob.id,
-        formValuesToPayload(values),
-      );
-      if (updated) {
-        setEditModalOpen(false);
-        setEditingJob(null);
-      }
+      return await handleUpdateJob(id, formValuesToPayload(values));
     } finally {
       setSaving(false);
     }

@@ -37,14 +37,14 @@ export function DataBackupControls({
         type="button"
         onClick={onExport}
         disabled={jobCount === 0}
-        className="rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-medium text-foreground transition hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-50"
+        className="rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground transition hover:border-border-strong hover:bg-surface-muted disabled:cursor-not-allowed disabled:opacity-50"
       >
         {t.backup.export}
       </button>
       <button
         type="button"
         onClick={() => fileInputRef.current?.click()}
-        className="rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-medium text-foreground transition hover:border-accent hover:text-accent"
+        className="rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground transition hover:border-border-strong hover:bg-surface-muted"
       >
         {t.backup.import}
       </button>

@@ -9,8 +9,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: fi.meta.description,
     start_url: "/app",
     display: "standalone",
-    background_color: "#0b1220",
-    theme_color: "#0f766e",
+    background_color: "#f7f7f5",
+    theme_color: "#141413",
     lang: "fi",
   };
 }

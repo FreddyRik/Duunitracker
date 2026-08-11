@@ -3,6 +3,7 @@
 import { useLocale } from "@/components/LocaleProvider";
 import { JobFormField, inputClassName } from "@/components/JobFormField";
 import { statusLabel, workTypeLabel } from "@/lib/i18n";
+import { buildAppliedFieldPatch } from "@/lib/job-form-mappers";
 import type { JobFormValues, JobStatus, WorkType } from "@/types/job";
 import { JOB_STATUSES, WORK_TYPES } from "@/types/job";
 
@@ -21,7 +22,9 @@ export function JobFormTrackingFields({ values, onPatch }: Props) {
           <select
             value={values.applied ? "yes" : "no"}
             onChange={(event) =>
-              onPatch({ applied: event.target.value === "yes" })
+              onPatch(
+                buildAppliedFieldPatch(event.target.value === "yes", values),
+              )
             }
             className={inputClassName}
           >

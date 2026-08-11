@@ -1,5 +1,6 @@
 import { formatCompanyName, todayDateString } from "@/lib/format";
 import {
+  applyAppliedSideEffects,
   applyStatusSideEffects,
   normalizeJob,
   resolveDateApplied,
@@ -90,6 +91,10 @@ export function createJob(input: CreateJobInput): JobApplication {
   const jobs = readJobs();
   const now = new Date().toISOString();
   const applied = validated.applied ?? false;
+  const status =
+    applied && (validated.status ?? "Saved") === "Saved"
+      ? "Applied"
+      : (validated.status ?? "Saved");
 
   const job: JobApplication = {
     id: crypto.randomUUID(),
@@ -99,7 +104,7 @@ export function createJob(input: CreateJobInput): JobApplication {
     location: validated.location ?? null,
     deadline: validated.deadline ?? null,
     applied,
-    status: validated.status ?? "Saved",
+    status,
     notes: validated.notes ?? "",
     dateApplied:
       validated.dateApplied ?? (applied ? todayDateString() : null),
@@ -127,7 +132,8 @@ export function updateJob(
   if (index === -1) return null;
 
   const existing = jobs[index];
-  const withStatus = applyStatusSideEffects(existing, patch);
+  const withApplied = applyAppliedSideEffects(existing, patch);
+  const withStatus = applyStatusSideEffects(existing, withApplied);
   const validated = validateUpdatePatch(withStatus);
   const updated: JobApplication = {
     ...existing,

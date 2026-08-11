@@ -21,6 +21,7 @@ export const fiCommon: Pick<
   | "workType"
   | "deadline"
   | "description"
+  | "ui"
   | "errors"
 > = {
   meta: {
@@ -33,6 +34,31 @@ export const fiCommon: Pick<
     subhead:
       "Tuo työpaikkailmoitukset Duunitorista, seuraa hakemustesi tilaa ja pidä muistiinpanot tallessa – kaikki data pysyy omassa selaimessasi.",
     cta: "Avaa tracker",
+    eyebrow: "Ilmainen · Ei tiliä · Data pysyy selaimessasi",
+    scrollHint: "Näin se toimii",
+    previewLabel: "Esikatselu hakemuslistasta",
+    previewJobs: [
+      {
+        title: "Frontend-kehittäjä",
+        company: "Pohjoinen Studio",
+        deadline: "2 pv",
+      },
+      {
+        title: "UI-suunnittelija",
+        company: "Aalto Digital",
+        deadline: "5 pv",
+      },
+      {
+        title: "Full stack -kehittäjä",
+        company: "Saaristo Works",
+        deadline: "9 pv",
+      },
+      {
+        title: "Tuotedesigner",
+        company: "Kaksi Labs",
+        deadline: "14 pv",
+      },
+    ],
     howItWorksTitle: "Näin se toimii",
     steps: [
       {
@@ -119,8 +145,8 @@ export const fiCommon: Pick<
     confirmReplace:
       "Tuonti korvaa kaikki tässä selaimessa tallennetut hakemukset. Jatketaanko?",
     reminder:
-      "Sinulla on useita hakemuksia tallennettuna. Vie varmuuskopio, jotta et menetä tietoja, jos selaimen data tyhjennetään.",
-    dismissReminder: "Ei nyt",
+      "Varmuuskopio kannattaa viedä ajoittain — selaimen tiedot voivat tyhjentyä ilman varoitusta.",
+    dismissReminder: "Muistuta myöhemmin",
   },
   stats: {
     totalJobs: "Yhteensä",
@@ -188,11 +214,18 @@ export const fiCommon: Pick<
     dueToday: "Hakuaika päättyy tänään",
     dueTomorrow: "Hakuaika päättyy huomenna",
     dueInDays: "Hakuaika päättyy {days} päivän kuluttua",
-    overdueOne: "Myöhässä 1 päivä",
-    overdueMany: "Myöhässä {days} päivää",
+    expired: "Haku aika loppunut",
   },
   description: {
     empty: "Tälle työpaikalle ei ole tallennettu kuvausta.",
+  },
+  ui: {
+    moreActions: "Lisää toimintoja",
+    all: "Kaikki",
+    commandHint: "Enter tuo · Esc sulkee",
+    clearFilters: "Tyhjennä suodattimet",
+    details: "Tiedot",
+    notesSaved: "Tallennettu",
   },
   errors: {
     invalidJson: "Tuontitiedosto ei ole kelvollista JSON-muotoa",

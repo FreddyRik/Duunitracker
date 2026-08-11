@@ -3,38 +3,41 @@
 import { useState } from "react";
 import type { JobApplication, JobFormValues } from "@/types/job";
 
+export type PanelMode = "overview" | "edit";
+
 export function useModalState() {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [createMode, setCreateMode] = useState<"import" | "manual">("import");
   const [createDraft, setCreateDraft] = useState<JobFormValues | null>(null);
-  const [editModalOpen, setEditModalOpen] = useState(false);
-  const [editingJob, setEditingJob] = useState<JobApplication | null>(null);
-  const [viewingJob, setViewingJob] = useState<JobApplication | null>(null);
+  /** Tracked by id so the panel never renders a stale copy after an update. */
+  const [panelJobId, setPanelJobId] = useState<string | null>(null);
+  const [panelMode, setPanelMode] = useState<PanelMode>("overview");
 
   return {
     createModalOpen,
     createMode,
     createDraft,
-    editModalOpen,
-    editingJob,
-    viewingJob,
+    panelJobId,
+    panelMode,
     setCreateModalOpen,
     setCreateMode,
     setCreateDraft,
-    setEditModalOpen,
-    setEditingJob,
-    setViewingJob,
+    setPanelMode,
+    openPanel(job: JobApplication) {
+      setPanelJobId(job.id);
+      setPanelMode("overview");
+    },
+    openPanelEdit(job: JobApplication) {
+      setPanelJobId(job.id);
+      setPanelMode("edit");
+    },
+    closePanel() {
+      setPanelJobId(null);
+      setPanelMode("overview");
+    },
     closeCreate() {
       setCreateModalOpen(false);
       setCreateDraft(null);
-    },
-    closeEdit() {
-      setEditModalOpen(false);
-      setEditingJob(null);
-    },
-    openEdit(job: JobApplication) {
-      setEditingJob(job);
-      setEditModalOpen(true);
     },
   };
 }

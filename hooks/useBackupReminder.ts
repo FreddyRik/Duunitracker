@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   dismissBackupReminder,
   markBackupExported,
@@ -8,20 +8,22 @@ import {
 } from "@/lib/backup-reminder";
 
 export function useBackupReminder(jobCount: number) {
-  const [showReminder, setShowReminder] = useState(false);
+  /** Bumped after export/dismiss so localStorage reads re-evaluate. */
+  const [ackVersion, setAckVersion] = useState(0);
 
-  useEffect(() => {
-    setShowReminder(shouldShowBackupReminder(jobCount));
-  }, [jobCount]);
+  const showReminder = useMemo(() => {
+    void ackVersion;
+    return shouldShowBackupReminder(jobCount);
+  }, [jobCount, ackVersion]);
 
   const acknowledgeExport = useCallback(() => {
     markBackupExported(jobCount);
-    setShowReminder(false);
+    setAckVersion((current) => current + 1);
   }, [jobCount]);
 
   const dismissReminder = useCallback(() => {
     dismissBackupReminder(jobCount);
-    setShowReminder(false);
+    setAckVersion((current) => current + 1);
   }, [jobCount]);
 
   return { showReminder, acknowledgeExport, dismissReminder };

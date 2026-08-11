@@ -20,7 +20,7 @@ function FooterLink({
       href={href}
       target="_blank"
       rel="noreferrer"
-      className="text-muted transition hover:text-accent"
+      className="text-muted transition hover:text-foreground"
     >
       {children}
     </a>
@@ -35,7 +35,7 @@ function InternalFooterLink({
   children: React.ReactNode;
 }) {
   return (
-    <Link href={href} className="text-muted transition hover:text-accent">
+    <Link href={href} className="text-muted transition hover:text-foreground">
       {children}
     </Link>
   );

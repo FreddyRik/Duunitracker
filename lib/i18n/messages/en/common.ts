@@ -21,6 +21,7 @@ export const enCommon: Pick<
   | "workType"
   | "deadline"
   | "description"
+  | "ui"
   | "errors"
 > = {
   meta: {
@@ -33,6 +34,31 @@ export const enCommon: Pick<
     subhead:
       "Import Duunitori job postings, follow application status, and keep notes — all stored locally in your browser.",
     cta: "Open tracker",
+    eyebrow: "Free · No account · Data stays in your browser",
+    scrollHint: "How it works",
+    previewLabel: "Preview of the application list",
+    previewJobs: [
+      {
+        title: "Frontend Developer",
+        company: "Pohjoinen Studio",
+        deadline: "2d",
+      },
+      {
+        title: "UI Designer",
+        company: "Aalto Digital",
+        deadline: "5d",
+      },
+      {
+        title: "Full Stack Developer",
+        company: "Saaristo Works",
+        deadline: "9d",
+      },
+      {
+        title: "Product Designer",
+        company: "Kaksi Labs",
+        deadline: "14d",
+      },
+    ],
     howItWorksTitle: "How it works",
     steps: [
       {
@@ -119,8 +145,8 @@ export const enCommon: Pick<
     confirmReplace:
       "Import will replace all jobs stored in this browser. Continue?",
     reminder:
-      "You have several applications saved. Export a backup so you don't lose data if browser storage is cleared.",
-    dismissReminder: "Not now",
+      "Worth exporting a backup now and then — browser storage can be cleared without warning.",
+    dismissReminder: "Remind me later",
   },
   stats: {
     totalJobs: "Total Jobs",
@@ -188,11 +214,18 @@ export const enCommon: Pick<
     dueToday: "Due today",
     dueTomorrow: "Due tomorrow",
     dueInDays: "Due in {days} days",
-    overdueOne: "Overdue by 1 day",
-    overdueMany: "Overdue by {days} days",
+    expired: "Application closed",
   },
   description: {
     empty: "No description saved for this job.",
+  },
+  ui: {
+    moreActions: "More actions",
+    all: "All",
+    commandHint: "Enter to import · Esc to close",
+    clearFilters: "Clear filters",
+    details: "Details",
+    notesSaved: "Saved",
   },
   errors: {
     invalidJson: "Import file is not valid JSON",

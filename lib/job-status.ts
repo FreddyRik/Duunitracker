@@ -47,6 +47,11 @@ export function isDeadlineUrgent(value: string | null | undefined): boolean {
   return days !== null && days >= 0 && days <= 5;
 }
 
+export function isDeadlineExpired(value: string | null | undefined): boolean {
+  const days = daysUntilDeadline(value);
+  return days !== null && days < 0;
+}
+
 export function formatDeadlineRelative(
   value: string,
   deadline: Messages["deadline"],
@@ -57,10 +62,7 @@ export function formatDeadlineRelative(
   }
 
   if (days < 0) {
-    const overdue = Math.abs(days);
-    return overdue === 1
-      ? deadline.overdueOne
-      : formatTemplate(deadline.overdueMany, { days: overdue });
+    return deadline.expired;
   }
 
   if (days === 0) {

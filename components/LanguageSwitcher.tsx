@@ -18,7 +18,7 @@ export function LanguageSwitcher() {
     <div
       role="radiogroup"
       aria-label={t.language.ariaLabel}
-      className="inline-flex rounded-xl border border-border bg-surface-muted p-1"
+      className="inline-flex rounded-md border border-border p-0.5"
     >
       {LOCALES.map((option) => {
         const selected = locale === option;
@@ -29,9 +29,9 @@ export function LanguageSwitcher() {
             role="radio"
             aria-checked={selected}
             onClick={() => setLocale(option)}
-            className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+            className={`rounded-sm px-3 py-1.5 text-xs font-semibold transition ${
               selected
-                ? "bg-accent text-accent-fg shadow-sm"
+                ? "bg-accent text-accent-fg"
                 : "text-muted hover:text-foreground"
             }`}
           >

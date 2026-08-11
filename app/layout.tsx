@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { LocaleProvider } from "@/components/LocaleProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -12,9 +12,16 @@ import {
 import { DEFAULT_LOCALE } from "@/types/locale";
 import "./globals.css";
 
-const plusJakarta = Plus_Jakarta_Sans({
-  variable: "--font-plus-jakarta",
+const ibmPlexSans = IBM_Plex_Sans({
+  variable: "--font-ibm-plex-sans",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
+const ibmPlexMono = IBM_Plex_Mono({
+  variable: "--font-ibm-plex-mono",
+  subsets: ["latin"],
+  weight: ["400", "500"],
 });
 
 export const metadata: Metadata = createSiteMetadata();
@@ -27,10 +34,10 @@ const themeInitScript = `
     var stored = localStorage.getItem(key) || localStorage.getItem(legacyKey);
     var theme = stored === "light" || stored === "dark"
       ? stored
-      : "dark";
+      : "light";
     document.documentElement.setAttribute("data-theme", theme);
   } catch (e) {
-    document.documentElement.setAttribute("data-theme", "dark");
+    document.documentElement.setAttribute("data-theme", "light");
   }
   try {
     var localeKey = "${LOCALE_STORAGE_KEY}";
@@ -51,8 +58,8 @@ export default function RootLayout({
   return (
     <html
       lang={DEFAULT_LOCALE}
-      data-theme="dark"
-      className={`${plusJakarta.variable} h-full antialiased`}
+      data-theme="light"
+      className={`${ibmPlexSans.variable} ${ibmPlexMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>

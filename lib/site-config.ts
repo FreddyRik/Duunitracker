@@ -26,10 +26,16 @@ export const THEME_CHANGE_EVENT = "duunitracker-theme-change";
 export const LOCALE_STORAGE_KEY = "duunitracker-locale";
 export const LOCALE_CHANGE_EVENT = "duunitracker-locale-change";
 
-export const BACKUP_REMINDER_MIN_JOBS = 3;
+/** First reminder only once the list is non-trivial. */
+export const BACKUP_REMINDER_MIN_JOBS = 5;
+/** After dismiss/export, wait until this many more jobs exist. */
+export const BACKUP_REMINDER_JOB_DELTA = 5;
+/** And wait at least this long before nagging again. */
+export const BACKUP_REMINDER_COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000;
 export const BACKUP_LAST_EXPORT_COUNT_KEY = "duunitracker-backup-last-export-count";
 export const BACKUP_REMINDER_DISMISSED_COUNT_KEY =
   "duunitracker-backup-reminder-dismissed-count";
+export const BACKUP_REMINDER_ACK_AT_KEY = "duunitracker-backup-reminder-ack-at";
 
 /** Legacy keys from the previous "job-tracker" branding. */
 export const LEGACY_JOBS_STORAGE_KEY = "job-tracker-jobs";

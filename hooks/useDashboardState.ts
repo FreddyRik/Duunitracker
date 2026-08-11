@@ -18,6 +18,8 @@ export function useDashboardState() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<JobListFilter>("All");
+  const [commandBarOpen, setCommandBarOpen] = useState(false);
+  const [activeRowId, setActiveRowId] = useState<string | null>(null);
   const modals = useModalState();
   const backupReminder = useBackupReminder(jobs.length);
 
@@ -45,6 +47,11 @@ export function useDashboardState() {
     });
   }, [jobs, search, statusFilter]);
 
+  const panelJob = useMemo(
+    () => jobs.find((job) => job.id === modals.panelJobId) ?? null,
+    [jobs, modals.panelJobId],
+  );
+
   const mutations = useJobMutations({
     setJobs,
     setImporting,
@@ -53,10 +60,12 @@ export function useDashboardState() {
     setCreateDraft: modals.setCreateDraft,
     setCreateMode: modals.setCreateMode,
     setCreateModalOpen: modals.setCreateModalOpen,
-    setEditModalOpen: modals.setEditModalOpen,
-    setEditingJob: modals.setEditingJob,
-    editingJob: modals.editingJob,
   });
+
+  function clearFilters() {
+    setSearch("");
+    setStatusFilter("All");
+  }
 
   function handleExport() {
     setError(null);
@@ -105,8 +114,15 @@ export function useDashboardState() {
     error,
     search,
     statusFilter,
+    commandBarOpen,
+    activeRowId,
+    panelJob,
     setSearch,
     setStatusFilter,
+    setCommandBarOpen,
+    setActiveRowId,
+    setError,
+    clearFilters,
     handleExport,
     handleImportBackup,
     showBackupReminder: backupReminder.showReminder,

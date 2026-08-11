@@ -19,7 +19,7 @@ export function NotesField({
       <button
         type="button"
         onClick={() => setExpanded(true)}
-        className="text-xs font-medium text-muted transition hover:text-accent"
+        className="text-xs font-medium text-muted transition hover:text-foreground"
       >
         {t.notes.add}
       </button>
@@ -39,7 +39,7 @@ export function NotesField({
         rows={2}
         placeholder={t.notes.placeholder}
         autoFocus={expanded && !hasNotes}
-        className="w-full min-w-[10rem] rounded-lg border border-border-strong bg-surface-solid px-2.5 py-1.5 text-sm text-foreground outline-none transition focus:border-accent focus:ring-2 focus:ring-ring"
+        className="w-full min-w-[10rem] rounded-md border border-border-strong bg-transparent px-2.5 py-1.5 text-sm text-foreground outline-none transition focus:border-accent focus:ring-1 focus:ring-ring"
       />
       {!hasNotes && (
         <button

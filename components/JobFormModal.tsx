@@ -50,11 +50,11 @@ export function JobFormModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay p-4 backdrop-blur-sm">
+    <div className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-scrim p-4 backdrop-blur-[2px]">
       <div
         role="dialog"
         aria-modal="true"
-        className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl border border-border bg-surface-solid p-6 shadow-2xl"
+        className="animate-command-in max-h-[90vh] w-full max-w-xl overflow-y-auto border border-border bg-surface-solid p-6 shadow-2xl"
       >
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
@@ -64,7 +64,7 @@ export function JobFormModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg px-2 py-1 text-muted transition hover:bg-surface-muted hover:text-foreground"
+            className="rounded-md px-2 py-1 text-muted transition hover:bg-surface-muted hover:text-foreground"
             aria-label={t.actions.close}
           >
             ×
@@ -83,14 +83,14 @@ export function JobFormModal({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl border border-border-strong px-4 py-2 text-sm font-medium text-muted-strong transition hover:bg-surface-muted"
+              className="rounded-md border border-border-strong px-4 py-2 text-sm font-medium text-muted-strong transition hover:bg-surface-muted"
             >
               {t.actions.cancel}
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-accent-fg transition hover:bg-accent-hover disabled:opacity-60"
+              className="rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-fg transition hover:bg-accent-hover disabled:opacity-60"
             >
               {saving
                 ? t.form.saving
