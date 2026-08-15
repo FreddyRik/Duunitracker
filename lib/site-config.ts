@@ -41,6 +41,7 @@ export const PWA_THEME_COLOR = "#141413";
 export const PWA_BACKGROUND_COLOR = "#f7f7f5";
 export const PWA_THEME_COLOR_DARK = "#0c0c0b";
 export const PWA_INSTALL_DISMISSED_KEY = "duunitracker-pwa-install-dismissed";
+export const SHARE_INTAKE_STORAGE_KEY = "duunitracker-share-intake";
 export const PWA_INSTALL_DISMISS_MS = 14 * 24 * 60 * 60 * 1000;
 export const SERVICE_WORKER_PATH = "/sw.js";
 

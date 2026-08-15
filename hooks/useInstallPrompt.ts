@@ -15,17 +15,21 @@ export function useInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
   const [iosHint, setIosHint] = useState(false);
-  const [visible, setVisible] = useState(false);
+  const [bannerVisible, setBannerVisible] = useState(false);
+  const [installed, setInstalled] = useState(false);
 
   useEffect(() => {
-    if (isStandaloneDisplay() || isInstallPromptDismissed()) {
+    if (isStandaloneDisplay()) {
+      setInstalled(true);
       return;
     }
+
+    const bannerAllowed = !isInstallPromptDismissed();
 
     /* eslint-disable react-hooks/set-state-in-effect -- installability is only known after mount */
     if (isIosDevice()) {
       setIosHint(true);
-      setVisible(true);
+      if (bannerAllowed) setBannerVisible(true);
     }
     /* eslint-enable react-hooks/set-state-in-effect */
 
@@ -33,22 +37,33 @@ export function useInstallPrompt() {
       if (!isBeforeInstallPromptEvent(event)) return;
       event.preventDefault();
       setDeferredPrompt(event);
-      setVisible(true);
+      if (!isInstallPromptDismissed()) setBannerVisible(true);
+    }
+
+    function handleAppInstalled() {
+      setDeferredPrompt(null);
+      setBannerVisible(false);
+      setInstalled(true);
     }
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    window.addEventListener("appinstalled", handleAppInstalled);
     return () => {
       window.removeEventListener(
         "beforeinstallprompt",
         handleBeforeInstallPrompt,
       );
+      window.removeEventListener("appinstalled", handleAppInstalled);
     };
   }, []);
 
   const dismiss = useCallback(() => {
     dismissInstallPrompt();
-    setVisible(false);
-    setDeferredPrompt(null);
+    setBannerVisible(false);
+  }, []);
+
+  const showBanner = useCallback(() => {
+    setBannerVisible(true);
   }, []);
 
   const install = useCallback(async () => {
@@ -59,17 +74,21 @@ export function useInstallPrompt() {
     } catch (error) {
       console.error("Install prompt failed", error);
     } finally {
-      dismissInstallPrompt();
-      setVisible(false);
       setDeferredPrompt(null);
+      setBannerVisible(false);
+      dismissInstallPrompt();
     }
   }, [deferredPrompt]);
 
   return {
-    visible,
+    bannerVisible,
+    available: !installed && (deferredPrompt !== null || iosHint),
     iosHint,
     canPrompt: deferredPrompt !== null,
     install,
     dismiss,
+    showBanner,
   };
 }
+
+export type InstallPromptState = ReturnType<typeof useInstallPrompt>;

@@ -63,8 +63,10 @@ export type Messages = {
     installTitle: string;
     installBody: string;
     install: string;
+    installApp: string;
     dismiss: string;
     iosHint: string;
+    shareImporting: string;
     offline: string;
     offlineTitle: string;
     offlineBody: string;
@@ -273,6 +275,7 @@ export type Messages = {
     parseUnparseable: string;
     parseTooLarge: string;
     importJobFailed: string;
+    shareImportFailed: string;
     saveJobFailed: string;
     updateJobFailed: string;
     deleteJobFailed: string;

@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { fi } from "@/lib/i18n/messages/fi";
+import { SHARE_TARGET_PATH } from "@/lib/share-target/intake";
 import {
   APP_NAME,
   PWA_BACKGROUND_COLOR,
@@ -58,5 +59,14 @@ export default function manifest(): MetadataRoute.Manifest {
         ],
       },
     ],
+    share_target: {
+      action: SHARE_TARGET_PATH,
+      method: "GET",
+      params: {
+        title: "title",
+        text: "text",
+        url: "url",
+      },
+    },
   };
 }

@@ -14,6 +14,7 @@ import { Kbd } from "@/components/Kbd";
 import { useLocale } from "@/components/LocaleProvider";
 import { SiteFooter } from "@/components/SiteFooter";
 import { StatusTabs } from "@/components/StatusTabs";
+import { StatusToast } from "@/components/StatusToast";
 import type { useDashboardState } from "@/hooks/useDashboardState";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { deriveBrandStatus, groupByStatus } from "@/lib/job-insights";
@@ -48,6 +49,8 @@ export function DashboardView(state: DashboardState) {
     closePanel,
     closeCreate,
     clearFilters,
+    statusToast,
+    dismissStatusToast,
   } = state;
 
   const openCommandBar = useCallback(
@@ -218,6 +221,8 @@ export function DashboardView(state: DashboardState) {
         onClose={closeCreate}
         onSave={handleCreateJob}
       />
+
+      <StatusToast toast={statusToast} onDismiss={dismissStatusToast} />
     </div>
   );
 }

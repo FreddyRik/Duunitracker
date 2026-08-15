@@ -15,12 +15,14 @@ import {
 } from "@/lib/job-form-mappers";
 import { toUserFacingError } from "@/lib/user-facing-errors";
 import type { JobApplication, JobFormValues } from "@/types/job";
+import type { ShareIntakePayload, StatusToast } from "@/types/share-target";
 
 type MutationSetters = {
   setJobs: React.Dispatch<React.SetStateAction<JobApplication[]>>;
   setImporting: (value: boolean) => void;
   setSaving: (value: boolean) => void;
   setError: (value: string | null) => void;
+  setStatusToast: (value: StatusToast | null) => void;
   setCreateDraft: (value: JobFormValues | null) => void;
   setCreateMode: (value: "import" | "manual") => void;
   setCreateModalOpen: (value: boolean) => void;
@@ -33,10 +35,24 @@ export function useJobMutations(setters: MutationSetters) {
     setImporting,
     setSaving,
     setError,
+    setStatusToast,
     setCreateDraft,
     setCreateMode,
     setCreateModalOpen,
   } = setters;
+
+  const openManualDraft = useCallback(
+    (url: string, title: string) => {
+      setCreateDraft({
+        ...emptyJobFormValues(),
+        url,
+        title,
+      });
+      setCreateMode("manual");
+      setCreateModalOpen(true);
+    },
+    [setCreateDraft, setCreateMode, setCreateModalOpen],
+  );
 
   const handleImport = useCallback(
     async (url: string) => {
@@ -60,6 +76,55 @@ export function useJobMutations(setters: MutationSetters) {
       setCreateDraft,
       setCreateMode,
       setCreateModalOpen,
+    ],
+  );
+
+  const handleShareImport = useCallback(
+    async (payload: ShareIntakePayload) => {
+      const url = payload.url.trim();
+      const title = payload.title.trim();
+      if (!url && !title) return;
+
+      if (!url || !payload.autoParse) {
+        openManualDraft(url, title);
+        setStatusToast({
+          kind: "warning",
+          message: t.errors.shareImportFailed,
+        });
+        return;
+      }
+
+      setImporting(true);
+      setError(null);
+      setStatusToast({
+        kind: "info",
+        message: t.pwa.shareImporting,
+      });
+      try {
+        const parsed = await parseJobFromUrl(url);
+        setCreateDraft(parsedJobToFormValues(parsed));
+        setCreateMode("import");
+        setCreateModalOpen(true);
+        setStatusToast(null);
+      } catch {
+        openManualDraft(url, title);
+        setStatusToast({
+          kind: "warning",
+          message: t.errors.shareImportFailed,
+        });
+      } finally {
+        setImporting(false);
+      }
+    },
+    [
+      t,
+      setImporting,
+      setError,
+      setStatusToast,
+      setCreateDraft,
+      setCreateMode,
+      setCreateModalOpen,
+      openManualDraft,
     ],
   );
 
@@ -137,6 +202,7 @@ export function useJobMutations(setters: MutationSetters) {
 
   return {
     handleImport,
+    handleShareImport,
     handleCreateJob,
     handleUpdateJob,
     handleEditSave,

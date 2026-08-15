@@ -156,8 +156,10 @@ export const fiCommon: Pick<
     installBody:
       "Lisää Koti-valikkoon, niin sovellus aukeaa nopeammin ja toimii myös ilman verkkoyhteyttä.",
     install: "Asenna",
+    installApp: "Asenna sovellus",
     dismiss: "Ei nyt",
     iosHint: "iPhonessa napauta Jaa ja valitse Lisää Koti-valikkoon.",
+    shareImporting: "Tuodaan jaettua työpaikkailmoitusta...",
     offline: "Ei yhteyttä",
     offlineTitle: "Ei verkkoyhteyttä",
     offlineBody:
@@ -365,6 +367,8 @@ export const fiCommon: Pick<
     parseUnparseable: "Työpaikan tietoja ei voitu lukea tältä sivulta.",
     parseTooLarge: "Työpaikkasivu on liian suuri tuotavaksi.",
     importJobFailed: "Työpaikan tuonti epäonnistui",
+    shareImportFailed:
+      "Tietojen automaattinen haku epäonnistui. Voit täyttää tiedot käsin.",
     saveJobFailed: "Työpaikan tallennus epäonnistui",
     updateJobFailed: "Työpaikan päivitys epäonnistui",
     deleteJobFailed: "Työpaikan poisto epäonnistui",

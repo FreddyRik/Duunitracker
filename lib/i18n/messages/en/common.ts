@@ -156,8 +156,10 @@ export const enCommon: Pick<
     installBody:
       "Add it to your home screen for faster access and full offline tracking.",
     install: "Install",
+    installApp: "Install app",
     dismiss: "Not now",
     iosHint: "On iPhone, tap Share, then Add to Home Screen.",
+    shareImporting: "Importing shared job posting...",
     offline: "Offline",
     offlineTitle: "You are offline",
     offlineBody:
@@ -363,6 +365,8 @@ export const enCommon: Pick<
     parseUnparseable: "Could not read job details from that page.",
     parseTooLarge: "That job page is too large to import.",
     importJobFailed: "Failed to import job",
+    shareImportFailed:
+      "Could not fetch job details automatically. You can fill them in by hand.",
     saveJobFailed: "Failed to save job",
     updateJobFailed: "Failed to update job",
     deleteJobFailed: "Failed to delete job",

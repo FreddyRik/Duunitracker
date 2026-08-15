@@ -79,8 +79,7 @@ export default function RootLayout({
       <body className="min-h-full font-sans text-foreground">
         <ThemeProvider>
           <LocaleProvider>
-            {children}
-            <PwaRuntime />
+            <PwaRuntime>{children}</PwaRuntime>
           </LocaleProvider>
         </ThemeProvider>
         <Analytics />

@@ -49,6 +49,22 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   const request = event.request;
+  let url;
+  try {
+    url = new URL(request.url);
+  } catch {
+    return;
+  }
+
+  if (
+    url.origin === self.location.origin &&
+    url.pathname === "/share-target" &&
+    (request.method === "GET" || request.method === "HEAD")
+  ) {
+    event.respondWith(handleShareTarget(request));
+    return;
+  }
+
   if (request.method !== "GET" && request.method !== "HEAD") {
     if (isParserRequest(request)) {
       event.respondWith(networkFirstParser(request));
@@ -56,7 +72,6 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  const url = new URL(request.url);
   if (url.protocol !== "http:" && url.protocol !== "https:") return;
   if (url.origin !== self.location.origin) {
     event.respondWith(networkOnly(request));
@@ -80,6 +95,51 @@ self.addEventListener("fetch", (event) => {
 
   event.respondWith(staleWhileRevalidate(request, ASSETS));
 });
+
+async function handleShareTarget(request) {
+  return Response.redirect(rewriteShareTargetToApp(request.url), 303);
+}
+
+function rewriteShareTargetToApp(requestUrl) {
+  const incoming = new URL(requestUrl);
+  const title = incoming.searchParams.get("title") || "";
+  const text = incoming.searchParams.get("text") || "";
+  const sharedUrl = incoming.searchParams.get("url") || "";
+  const combined = [sharedUrl, text, title].join(" ");
+  const matches = combined.match(/https?:\/\/[^\s<>"'`\\]+/gi) || [];
+  const cleaned = [];
+  for (const raw of matches) {
+    const candidate = raw.replace(/[),.;:!?]+$/g, "");
+    try {
+      const parsed = new URL(candidate);
+      if (parsed.protocol !== "http:" && parsed.protocol !== "https:") continue;
+      if (parsed.username || parsed.password) continue;
+      cleaned.push(parsed.href);
+    } catch {
+      // skip malformed fragments
+    }
+  }
+  const duunitori = cleaned.find((candidate) => {
+    try {
+      const hostname = new URL(candidate).hostname;
+      return (
+        hostname === "duunitori.fi" || hostname.endsWith(".duunitori.fi")
+      );
+    } catch {
+      return false;
+    }
+  });
+  const dest = new URL("/app", self.location.origin);
+  const chosen = duunitori || cleaned[0] || "";
+  if (chosen) {
+    dest.searchParams.set("importUrl", chosen);
+    dest.searchParams.set("autoParse", "true");
+  }
+  if (title && !/^https?:\/\//i.test(title.trim())) {
+    dest.searchParams.set("importTitle", title);
+  }
+  return dest.toString();
+}
 
 function isParserRequest(request) {
   try {

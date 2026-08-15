@@ -1,13 +1,13 @@
 "use client";
 
 import { useLocale } from "@/components/LocaleProvider";
-import { useInstallPrompt } from "@/hooks/useInstallPrompt";
+import { useInstallPromptState } from "@/components/InstallPromptProvider";
 
 export function InstallPromptBanner() {
   const { t } = useLocale();
-  const prompt = useInstallPrompt();
+  const prompt = useInstallPromptState();
 
-  if (!prompt.visible) return null;
+  if (!prompt.bannerVisible) return null;
 
   return (
     <div

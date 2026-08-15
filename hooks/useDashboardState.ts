@@ -5,6 +5,8 @@ import { useLocale } from "@/components/LocaleProvider";
 import { useBackupReminder } from "@/hooks/useBackupReminder";
 import { useJobMutations } from "@/hooks/useJobMutations";
 import { useModalState } from "@/hooks/useModalState";
+import { useShareTargetImport } from "@/hooks/useShareTargetImport";
+import type { StatusToast } from "@/types/share-target";
 import { filterJobs } from "@/lib/job-insights";
 import {
   parseBackupDocument,
@@ -33,6 +35,7 @@ export function useDashboardState() {
   const [dashboardView, setDashboardView] = useState<DashboardViewId>("list");
   const [commandBarOpen, setCommandBarOpen] = useState(false);
   const [activeRowId, setActiveRowId] = useState<string | null>(null);
+  const [statusToast, setStatusToast] = useState<StatusToast | null>(null);
   const modals = useModalState();
   const backupReminder = useBackupReminder(jobs.length);
   const deferredSearch = useDeferredValue(search);
@@ -98,10 +101,20 @@ export function useDashboardState() {
     setImporting,
     setSaving,
     setError,
+    setStatusToast,
     setCreateDraft: modals.setCreateDraft,
     setCreateMode: modals.setCreateMode,
     setCreateModalOpen: modals.setCreateModalOpen,
   });
+
+  useShareTargetImport({
+    hydrated,
+    onShareImport: mutations.handleShareImport,
+  });
+
+  const dismissStatusToast = useCallback(() => {
+    setStatusToast(null);
+  }, []);
 
   const clearFilters = useCallback(() => {
     setSearch("");
@@ -171,6 +184,8 @@ export function useDashboardState() {
     setCommandBarOpen,
     setActiveRowId,
     setError,
+    statusToast,
+    dismissStatusToast,
     clearFilters,
     handleExport,
     handleImportBackup,

@@ -29,6 +29,15 @@ const nextConfig: NextConfig = {
         ],
       },
       {
+        source: "/share-target",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "no-cache, no-store, must-revalidate",
+          },
+        ],
+      },
+      {
         source: "/manifest.webmanifest",
         headers: [
           {

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { InstallAppButton } from "@/components/InstallAppButton";
 import { LandingHero } from "@/components/landing/LandingHero";
 import { LandingJsonLd } from "@/components/landing/LandingJsonLd";
 import { LandingStickyCta } from "@/components/landing/LandingStickyCta";
@@ -92,6 +93,7 @@ export function LandingPage() {
               >
                 {footer.reportIssue}
               </a>
+              <InstallAppButton withSeparator />
             </nav>
             <p className="mt-3">© {new Date().getFullYear()} Freddy</p>
           </footer>

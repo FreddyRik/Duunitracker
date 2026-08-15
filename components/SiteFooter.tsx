@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { InstallAppButton } from "@/components/InstallAppButton";
 import { useLocale } from "@/components/LocaleProvider";
 import {
   GITHUB_ISSUES,
@@ -74,6 +75,7 @@ export function SiteFooter() {
             )}
           </span>
         ))}
+        <InstallAppButton withSeparator />
       </nav>
     </footer>
   );
