@@ -4,12 +4,15 @@ import {
   applicationDate,
   buildFunnel,
   buildOfficialReport,
+  buildOfficialReportPdf,
   buildQuotaProgress,
   buildResponseTimeMetrics,
+  encodePdfText,
   inclusiveDayCount,
   isSubmittedApplication,
   jobsAppliedInRange,
   lastMonthRange,
+  officialReportPdfFilename,
   quotaTargetForRangeDays,
   resolvePresetRange,
   responseDelayDays,
@@ -17,6 +20,7 @@ import {
   thisMonthRange,
   weekWindows,
 } from "@/lib/analytics";
+import { fi } from "@/lib/i18n/messages/fi";
 import {
   EMPLOYMENT_QUOTA_APPLICATIONS,
   EMPLOYMENT_QUOTA_PERIOD_DAYS,
@@ -289,5 +293,40 @@ describe("official report", () => {
     expect(report.quota.appliedCount).toBe(3);
     expect(report.funnel.submittedCount).toBe(3);
     expect(applicationDate(jobs[3])).toBeNull();
+  });
+});
+
+describe("official report PDF", () => {
+  it("encodes Finnish letters as WinAnsi octal escapes", () => {
+    expect(encodePdfText("Hylätty")).toContain("\\344");
+    expect(encodePdfText("Hello (world)")).toBe("Hello \\(world\\)");
+  });
+
+  it("builds a PDF with the reporting period and filename", () => {
+    const jobs = [
+      createTestJob({
+        id: "a",
+        company: "Aalto Digital",
+        title: "Frontend-kehittäjä",
+        status: "Applied",
+        dateApplied: "2026-08-02",
+      }),
+    ];
+    const report = buildOfficialReport(
+      jobs,
+      { start: "2026-08-01", end: "2026-08-31" },
+      "2026-08-15T09:00:00.000Z",
+    );
+    const bytes = buildOfficialReportPdf(report, fi);
+    const ascii = new TextDecoder("latin1").decode(bytes);
+
+    expect(ascii.startsWith("%PDF-1.4")).toBe(true);
+    expect(ascii).toContain("%%EOF");
+    expect(ascii).toContain("/BaseFont /Helvetica");
+    expect(ascii).toContain("seurantaraportti");
+    expect(ascii).toContain("01.08.2026");
+    expect(officialReportPdfFilename(report)).toBe(
+      "tyonhaku-raportti-2026-08-01-2026-08-31.pdf",
+    );
   });
 });

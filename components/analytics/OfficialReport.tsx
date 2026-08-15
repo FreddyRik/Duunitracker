@@ -1,19 +1,37 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { useLocale } from "@/components/LocaleProvider";
+import {
+  buildOfficialReportPdf,
+  officialReportPdfFilename,
+} from "@/lib/analytics/pdf";
 import { formatDate } from "@/lib/format";
 import { formatTemplate, statusLabel } from "@/lib/i18n";
 import { APP_NAME } from "@/lib/site-config";
 import { OFFICIAL_REPORT_ID } from "@/lib/ui-constants";
+import { toUserFacingError } from "@/lib/user-facing-errors";
 import type { OfficialReportData } from "@/types/analytics";
 
 type OfficialReportProps = {
   report: OfficialReportData;
 };
 
+function downloadPdf(bytes: Uint8Array, filename: string) {
+  const copy = new Uint8Array(bytes.byteLength);
+  copy.set(bytes);
+  const blob = new Blob([copy.buffer], { type: "application/pdf" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  anchor.click();
+  URL.revokeObjectURL(url);
+}
+
 export function OfficialReport({ report }: OfficialReportProps) {
   const { t, locale } = useLocale();
+  const [pdfError, setPdfError] = useState<string | null>(null);
 
   const handlePrint = useCallback(() => {
     const previousTitle = document.title;
@@ -27,6 +45,18 @@ export function OfficialReport({ report }: OfficialReportProps) {
     window.addEventListener("afterprint", restore);
     window.print();
   }, [report.range.end, report.range.start, t.analytics.reportOfficialTitle]);
+
+  const handleSavePdf = useCallback(() => {
+    setPdfError(null);
+    try {
+      const bytes = buildOfficialReportPdf(report, t);
+      downloadPdf(bytes, officialReportPdfFilename(report));
+    } catch (saveError: unknown) {
+      setPdfError(
+        toUserFacingError(saveError, t, t.analytics.reportPdfFailed),
+      );
+    }
+  }, [report, t]);
 
   const generated = new Date(report.generatedAt);
   const generatedLabel = Number.isNaN(generated.getTime())
@@ -44,14 +74,29 @@ export function OfficialReport({ report }: OfficialReportProps) {
             {t.analytics.reportHint}
           </p>
         </div>
-        <button
-          type="button"
-          onClick={handlePrint}
-          className="inline-flex items-center rounded-md bg-accent px-3 py-1.5 text-xs font-semibold text-accent-fg transition hover:bg-accent-hover"
-        >
-          {t.analytics.reportPrint}
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={handleSavePdf}
+            className="inline-flex items-center rounded-md bg-accent px-3 py-1.5 text-xs font-semibold text-accent-fg transition hover:bg-accent-hover"
+          >
+            {t.analytics.reportSavePdf}
+          </button>
+          <button
+            type="button"
+            onClick={handlePrint}
+            className="inline-flex items-center rounded-md border border-border-strong px-3 py-1.5 text-xs font-semibold text-foreground transition hover:bg-surface-muted"
+          >
+            {t.analytics.reportPrint}
+          </button>
+        </div>
       </div>
+
+      {pdfError && (
+        <p className="no-print mb-3 text-xs text-danger" role="alert">
+          {pdfError}
+        </p>
+      )}
 
       <article
         id={OFFICIAL_REPORT_ID}

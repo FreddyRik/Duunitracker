@@ -22,6 +22,11 @@ export { buildFunnel } from "@/lib/analytics/funnel";
 export { buildQuotaProgress, jobsAppliedInRange } from "@/lib/analytics/quota";
 export { buildOfficialReport } from "@/lib/analytics/report";
 export {
+  buildOfficialReportPdf,
+  encodePdfText,
+  officialReportPdfFilename,
+} from "@/lib/analytics/pdf";
+export {
   buildResponseTimeMetrics,
   responseDate,
   responseDelayDays,

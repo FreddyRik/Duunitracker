@@ -271,7 +271,7 @@ export const fiCommon: Pick<
       "Tuo tai lisää työpaikkoja ja merkitse ne haetuiksi, niin raportit täyttyvät.",
     funnelTitle: "Hakemussuppilo",
     funnelHint:
-      "Muuntuminen lähetetyistä hakemuksista. Käsittelyssä on työnantajan prosessi; Hylätty on lopputulos, ei myöhempi vaihe.",
+      "Kuinka pitkälle lähetetyt hakemukset ovat edenneet. Hylätty näytetään erikseen lopputuloksena, ei suppilon myöhempänä vaiheena.",
     funnelEmpty: "Ei lähetettyjä hakemuksia tällä jaksolla.",
     funnelWaiting: "{count} odottaa vielä vastausta",
     funnelResponded: "{count} sai vastauksen",
@@ -307,8 +307,11 @@ export const fiCommon: Pick<
     noResponseYet: "Ei vielä vastausta",
     reportTitle: "Virallinen seurantaraportti",
     reportHint:
-      "Siisti tulostettava listaus valitun jakson hakemuksista. Tulosta-toiminnolla voit tallentaa PDF:n Kelaa tai Työmarkkinatoria varten.",
-    reportPrint: "Tulosta / Tallenna PDF",
+      "Siisti listaus valitun jakson hakemuksista. Tallenna PDF Kelaa tai Työmarkkinatoria varten, tai tulosta paperikopio.",
+    reportPrint: "Tulosta",
+    reportSavePdf: "Tallenna PDF",
+    reportPdfFailed: "PDF:ää ei voitu tallentaa. Yritä uudelleen tai käytä tulostusta.",
+    funnelOutcome: "Lopputulos",
     reportOfficialTitle: "Työnhaun seurantaraportti",
     reportOfficialSubtitle: "Tukiasiakirja Kelaa / Työmarkkinatoria varten",
     reportPeriod: "Raportointijakso",

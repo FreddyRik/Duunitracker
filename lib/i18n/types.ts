@@ -226,6 +226,9 @@ export type Messages = {
     reportTitle: string;
     reportHint: string;
     reportPrint: string;
+    reportSavePdf: string;
+    reportPdfFailed: string;
+    funnelOutcome: string;
     reportOfficialTitle: string;
     reportOfficialSubtitle: string;
     reportPeriod: string;

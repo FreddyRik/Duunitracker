@@ -270,7 +270,7 @@ export const enCommon: Pick<
     emptyHint: "Import or add jobs, then mark them applied to see reports.",
     funnelTitle: "Application funnel",
     funnelHint:
-      "Conversion from submitted applications. In Review is the employer pipeline; Rejected is an outcome, not a later stage.",
+      "How far submitted applications have progressed. Rejected is listed separately as an outcome, not a later funnel stage.",
     funnelEmpty: "No submitted applications in this period.",
     funnelWaiting: "{count} still waiting for a response",
     funnelResponded: "{count} received a response",
@@ -306,8 +306,11 @@ export const enCommon: Pick<
     noResponseYet: "No response yet",
     reportTitle: "Official activity report",
     reportHint:
-      "A clean printable layout of applications in the selected period. Use Print to save a PDF for Kela or Työmarkkinatori.",
-    reportPrint: "Print / Save as PDF",
+      "A clean layout of applications in the selected period. Save a PDF for Kela or Työmarkkinatori, or print a paper copy.",
+    reportPrint: "Print",
+    reportSavePdf: "Save PDF",
+    reportPdfFailed: "Could not save the PDF. Try again, or use Print instead.",
+    funnelOutcome: "Outcome",
     reportOfficialTitle: "Job search activity report",
     reportOfficialSubtitle: "Supporting record for Kela / Työmarkkinatori",
     reportPeriod: "Reporting period",
