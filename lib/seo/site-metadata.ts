@@ -21,6 +21,12 @@ export function createSiteMetadata({
 
   return {
     metadataBase: new URL(SITE_URL),
+    applicationName: APP_NAME,
+    appleWebApp: {
+      capable: true,
+      title: APP_NAME,
+      statusBarStyle: "default",
+    },
     title: title
       ? { absolute: pageTitle }
       : {

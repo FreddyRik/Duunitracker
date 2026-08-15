@@ -1,12 +1,15 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { LocaleProvider } from "@/components/LocaleProvider";
+import { PwaRuntime } from "@/components/PwaRuntime";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { createSiteMetadata } from "@/lib/seo/site-metadata";
 import {
   LEGACY_THEME_STORAGE_KEY,
   LOCALE_STORAGE_KEY,
+  PWA_THEME_COLOR,
+  PWA_THEME_COLOR_DARK,
   THEME_STORAGE_KEY,
 } from "@/lib/site-config";
 import { DEFAULT_LOCALE } from "@/types/locale";
@@ -25,6 +28,14 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = createSiteMetadata();
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: PWA_THEME_COLOR },
+    { media: "(prefers-color-scheme: dark)", color: PWA_THEME_COLOR_DARK },
+  ],
+  colorScheme: "light dark",
+};
 
 const themeInitScript = `
 (function () {
@@ -67,7 +78,10 @@ export default function RootLayout({
       </head>
       <body className="min-h-full font-sans text-foreground">
         <ThemeProvider>
-          <LocaleProvider>{children}</LocaleProvider>
+          <LocaleProvider>
+            {children}
+            <PwaRuntime />
+          </LocaleProvider>
         </ThemeProvider>
         <Analytics />
       </body>

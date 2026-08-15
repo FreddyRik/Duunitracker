@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { AppHeader } from "@/components/AppHeader";
+import { AnalyticsSection } from "@/components/analytics/AnalyticsSection";
+import { AnalyticsViewToggle } from "@/components/analytics/AnalyticsViewToggle";
 import { BackupReminderBanner } from "@/components/BackupReminderBanner";
 import { CommandBar } from "@/components/CommandBar";
 import { DetailPanel } from "@/components/DetailPanel";
@@ -14,7 +16,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { StatusTabs } from "@/components/StatusTabs";
 import type { useDashboardState } from "@/hooks/useDashboardState";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
-import { deriveBrandStatus, orderJobsForDisplay } from "@/lib/job-insights";
+import { deriveBrandStatus, groupByStatus } from "@/lib/job-insights";
 
 type DashboardState = ReturnType<typeof useDashboardState>;
 
@@ -31,7 +33,32 @@ export function DashboardView(state: DashboardState) {
     openPanel,
     openPanelEdit,
     setActiveRowId,
+    setError,
+    setSearch,
+    setStatusFilter,
+    setDashboardView,
+    handleAddManual,
+    handleExport,
+    handleImportBackup,
+    handleUpdateJob,
+    handleDelete,
+    handleImport,
+    handleCreateJob,
+    handleEditSave,
+    closePanel,
+    closeCreate,
+    clearFilters,
   } = state;
+
+  const openCommandBar = useCallback(
+    () => setCommandBarOpen(true),
+    [setCommandBarOpen],
+  );
+  const closeCommandBar = useCallback(
+    () => setCommandBarOpen(false),
+    [setCommandBarOpen],
+  );
+  const dismissError = useCallback(() => setError(null), [setError]);
 
   /** A successful import hands off to the confirm form. */
   useEffect(() => {
@@ -39,24 +66,31 @@ export function DashboardView(state: DashboardState) {
   }, [createModalOpen, setCommandBarOpen]);
 
   /** Closing eagerly avoids a frame where both overlays are painted. */
-  function handleAddManual() {
+  const onAddManual = useCallback(() => {
     setCommandBarOpen(false);
-    state.handleAddManual();
-  }
+    handleAddManual();
+  }, [setCommandBarOpen, handleAddManual]);
 
   const grouped = statusFilter === "All";
-  const orderedJobs = useMemo(
-    () => orderJobsForDisplay(filteredJobs, grouped),
+  const statusGroups = useMemo(
+    () => (grouped ? groupByStatus(filteredJobs) : null),
     [filteredJobs, grouped],
+  );
+  const orderedJobs = useMemo(
+    () =>
+      statusGroups
+        ? statusGroups.flatMap((group) => group.jobs)
+        : filteredJobs,
+    [filteredJobs, statusGroups],
   );
   const brandStatus = useMemo(() => deriveBrandStatus(jobs), [jobs]);
 
   useKeyboardShortcuts({
-    enabled: !commandBarOpen && !createModalOpen && !panelJob,
+    enabled: !commandBarOpen && !createModalOpen && !panelJob && state.dashboardView === "list",
     rows: orderedJobs,
     activeRowId: state.activeRowId,
     setActiveRowId,
-    onOpenCommandBar: () => setCommandBarOpen(true),
+    onOpenCommandBar: openCommandBar,
     onOpenRow: openPanel,
     onEditRow: openPanelEdit,
   });
@@ -65,71 +99,89 @@ export function DashboardView(state: DashboardState) {
     <div className="flex min-h-dvh flex-col">
       <AppHeader
         search={state.search}
-        onSearchChange={state.setSearch}
-        onOpenCommandBar={() => setCommandBarOpen(true)}
-        onAddManual={handleAddManual}
+        onSearchChange={setSearch}
+        onOpenCommandBar={openCommandBar}
+        onAddManual={onAddManual}
         jobCount={jobs.length}
-        onExport={state.handleExport}
-        onImportBackup={state.handleImportBackup}
+        onExport={handleExport}
+        onImportBackup={handleImportBackup}
         brandStatus={brandStatus}
       />
 
       {state.error && !commandBarOpen && (
-        <ErrorStrip
-          message={state.error}
-          onDismiss={() => state.setError(null)}
-        />
+        <ErrorStrip message={state.error} onDismiss={dismissError} />
       )}
 
       <main className="mx-auto w-full max-w-[1100px] flex-1 px-4 sm:px-6">
         {state.showBackupReminder && (
-          <div className="pt-4">
+          <div className="no-print pt-4">
             <BackupReminderBanner
-              onExport={state.handleExport}
+              onExport={handleExport}
               onDismiss={state.dismissBackupReminder}
             />
           </div>
         )}
 
-        <StatusTabs
-          jobs={jobs}
-          value={statusFilter}
-          onChange={state.setStatusFilter}
+        <AnalyticsViewToggle
+          value={state.dashboardView}
+          onChange={setDashboardView}
         />
 
-        <JobList
-          jobs={orderedJobs}
-          hasJobs={jobs.length > 0}
-          grouped={grouped}
-          activeRowId={state.activeRowId}
-          onImport={() => setCommandBarOpen(true)}
-          onClearFilters={state.clearFilters}
-          onUpdate={state.handleUpdateJob}
-          onEdit={openPanelEdit}
-          onDelete={state.handleDelete}
-          onOpen={openPanel}
-        />
+        {state.dashboardView === "analytics" ? (
+          <div
+            role="tabpanel"
+            id="dashboard-panel-analytics"
+            aria-labelledby="dashboard-tab-analytics"
+          >
+            <AnalyticsSection jobs={jobs} />
+          </div>
+        ) : (
+          <div
+            role="tabpanel"
+            id="dashboard-panel-list"
+            aria-labelledby="dashboard-tab-list"
+          >
+            <StatusTabs
+              jobs={jobs}
+              value={statusFilter}
+              onChange={setStatusFilter}
+            />
 
-        {jobs.length > 0 && (
-          <div className="hidden items-center justify-end gap-5 py-5 text-[11px] text-muted lg:flex">
-            <span className="flex items-center gap-1.5">
-              <Kbd>C</Kbd> {t.importBar.importJob}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Kbd>/</Kbd> {t.filters.searchLabel}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Kbd>J</Kbd>
-              <Kbd>K</Kbd> {t.list.job}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Kbd>E</Kbd> {t.actions.edit}
-            </span>
+            <JobList
+              jobs={orderedJobs}
+              groups={statusGroups}
+              hasJobs={jobs.length > 0}
+              activeRowId={state.activeRowId}
+              onImport={openCommandBar}
+              onClearFilters={clearFilters}
+              onUpdate={handleUpdateJob}
+              onEdit={openPanelEdit}
+              onDelete={handleDelete}
+              onOpen={openPanel}
+            />
+
+            {jobs.length > 0 && (
+              <div className="no-print hidden items-center justify-end gap-5 py-5 text-[11px] text-muted lg:flex">
+                <span className="flex items-center gap-1.5">
+                  <Kbd>C</Kbd> {t.importBar.importJob}
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Kbd>/</Kbd> {t.filters.searchLabel}
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Kbd>J</Kbd>
+                  <Kbd>K</Kbd> {t.list.job}
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Kbd>E</Kbd> {t.actions.edit}
+                </span>
+              </div>
+            )}
           </div>
         )}
       </main>
 
-      <div className="mx-auto w-full max-w-[1100px] px-4 pb-8 sm:px-6">
+      <div className="no-print mx-auto w-full max-w-[1100px] px-4 pb-8 sm:px-6">
         <SiteFooter />
       </div>
 
@@ -137,20 +189,20 @@ export function DashboardView(state: DashboardState) {
         open={commandBarOpen}
         loading={state.importing}
         error={state.error}
-        onImport={state.handleImport}
-        onAddManual={handleAddManual}
-        onClose={() => setCommandBarOpen(false)}
+        onImport={handleImport}
+        onAddManual={onAddManual}
+        onClose={closeCommandBar}
       />
 
       <DetailPanel
         job={panelJob}
         mode={state.panelMode}
         saving={state.saving}
-        onClose={state.closePanel}
+        onClose={closePanel}
         onSetMode={state.setPanelMode}
-        onUpdate={state.handleUpdateJob}
-        onSave={state.handleEditSave}
-        onDelete={state.handleDelete}
+        onUpdate={handleUpdateJob}
+        onSave={handleEditSave}
+        onDelete={handleDelete}
       />
 
       <JobFormModal
@@ -163,8 +215,8 @@ export function DashboardView(state: DashboardState) {
         mode={state.createMode}
         initialValues={state.createDraft ?? {}}
         saving={state.saving}
-        onClose={state.closeCreate}
-        onSave={state.handleCreateJob}
+        onClose={closeCreate}
+        onSave={handleCreateJob}
       />
     </div>
   );

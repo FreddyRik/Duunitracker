@@ -1,3 +1,4 @@
+import { readStorageItemSoft, writeStorageItemSoft } from "@/lib/browser-storage";
 import {
   BACKUP_LAST_EXPORT_COUNT_KEY,
   BACKUP_REMINDER_ACK_AT_KEY,
@@ -8,21 +9,18 @@ import {
 } from "@/lib/site-config";
 
 function readStoredCount(key: string): number {
-  if (typeof window === "undefined") return 0;
-  const raw = window.localStorage.getItem(key);
+  const raw = readStorageItemSoft(key);
   if (!raw) return 0;
   const parsed = Number.parseInt(raw, 10);
   return Number.isNaN(parsed) ? 0 : parsed;
 }
 
 function writeStoredCount(key: string, value: number): void {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(key, String(value));
+  writeStorageItemSoft(key, String(value));
 }
 
 function readStoredTimestamp(key: string): number {
-  if (typeof window === "undefined") return 0;
-  const raw = window.localStorage.getItem(key);
+  const raw = readStorageItemSoft(key);
   if (!raw) return 0;
   const parsed = Number.parseInt(raw, 10);
   return Number.isNaN(parsed) ? 0 : parsed;

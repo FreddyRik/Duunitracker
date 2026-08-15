@@ -86,6 +86,7 @@ export type JobFormValues = {
 
 export type ApiErrorResponse = {
   error?: string;
+  code?: string;
 };
 
 export type ParseJobRequest = {

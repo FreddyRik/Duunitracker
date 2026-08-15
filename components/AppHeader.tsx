@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { DataBackupControls } from "@/components/DataBackupControls";
+import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { Kbd } from "@/components/Kbd";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useLocale } from "@/components/LocaleProvider";
@@ -35,6 +36,7 @@ export function AppHeader({
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     function handleScroll() {
@@ -56,7 +58,11 @@ export function AppHeader({
     }
 
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") setMenuOpen(false);
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setMenuOpen(false);
+        menuButtonRef.current?.focus();
+      }
     }
 
     document.addEventListener("mousedown", handlePointerDown);
@@ -69,7 +75,7 @@ export function AppHeader({
 
   return (
     <header
-      className={`sticky top-0 z-40 transition-all duration-200 ${
+      className={`no-print sticky top-0 z-40 transition-all duration-200 ${
         scrolled
           ? "border-b border-border bg-background/70 backdrop-blur-xl"
           : "border-b border-transparent"
@@ -86,6 +92,7 @@ export function AppHeader({
           <span className="text-sm font-semibold tracking-tight text-foreground">
             {t.app.name}
           </span>
+          <OfflineIndicator />
         </div>
 
         <div className="relative flex min-w-0 flex-1 items-center">
@@ -114,6 +121,7 @@ export function AppHeader({
           <button
             type="button"
             onClick={onOpenCommandBar}
+            aria-label={t.importBar.importJob}
             className="inline-flex items-center gap-2 rounded-md bg-accent px-3 py-1.5 text-xs font-semibold text-accent-fg transition hover:bg-accent-hover"
           >
             <span aria-hidden="true">+</span>
@@ -127,8 +135,9 @@ export function AppHeader({
 
           <div ref={menuRef} className="relative">
             <button
+              ref={menuButtonRef}
               type="button"
-              aria-haspopup="menu"
+              aria-haspopup="true"
               aria-expanded={menuOpen}
               aria-label={t.ui.moreActions}
               onClick={() => setMenuOpen((current) => !current)}
@@ -139,6 +148,8 @@ export function AppHeader({
 
             {menuOpen && (
               <div
+                role="dialog"
+                aria-label={t.ui.moreActions}
                 className="animate-pop-in absolute right-0 top-full z-40 mt-1 w-64 origin-top-right border border-border bg-surface-solid p-2 shadow-lg"
               >
                 <button

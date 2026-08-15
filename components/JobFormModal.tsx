@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useLocale } from "@/components/LocaleProvider";
 import { JobFormPrimaryFields } from "@/components/JobFormPrimaryFields";
 import { JobFormTrackingFields } from "@/components/JobFormTrackingFields";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { mergeJobFormValues } from "@/lib/job-form-mappers";
 import type { JobFormValues } from "@/types/job";
 
@@ -16,20 +17,28 @@ type JobFormModalProps = {
   onSave: (values: JobFormValues) => Promise<void>;
 };
 
-export function JobFormModal({
-  open,
+type JobFormModalContentProps = Omit<JobFormModalProps, "open">;
+
+function JobFormModalContent({
   mode,
   initialValues,
   saving = false,
   onClose,
   onSave,
-}: JobFormModalProps) {
+}: JobFormModalContentProps) {
   const { t } = useLocale();
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const titleId = "job-form-title";
   const [values, setValues] = useState<JobFormValues>(() =>
     mergeJobFormValues(initialValues),
   );
 
-  if (!open) return null;
+  useFocusTrap({
+    enabled: true,
+    containerRef: dialogRef,
+    onClose,
+    lockScroll: true,
+  });
 
   const isUrlRequired = mode === "import";
   const title =
@@ -50,15 +59,30 @@ export function JobFormModal({
   }
 
   return (
-    <div className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-scrim p-4 backdrop-blur-[2px]">
+    <div className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center p-4">
+      <button
+        type="button"
+        aria-label={t.actions.close}
+        onClick={onClose}
+        className="absolute inset-0 cursor-default bg-scrim backdrop-blur-[2px]"
+      />
+
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
-        className="animate-command-in max-h-[90vh] w-full max-w-xl overflow-y-auto border border-border bg-surface-solid p-6 shadow-2xl"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        className="animate-command-in relative max-h-[90vh] w-full max-w-xl overflow-y-auto border border-border bg-surface-solid p-6 shadow-2xl"
       >
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-xl font-semibold text-foreground">{title}</h2>
+            <h2
+              id={titleId}
+              className="text-xl font-semibold text-foreground"
+            >
+              {title}
+            </h2>
             <p className="mt-1 text-sm text-muted">{hint}</p>
           </div>
           <button
@@ -67,7 +91,7 @@ export function JobFormModal({
             className="rounded-md px-2 py-1 text-muted transition hover:bg-surface-muted hover:text-foreground"
             aria-label={t.actions.close}
           >
-            ×
+            <span aria-hidden="true">×</span>
           </button>
         </div>
 
@@ -103,6 +127,11 @@ export function JobFormModal({
       </div>
     </div>
   );
+}
+
+export function JobFormModal({ open, ...props }: JobFormModalProps) {
+  if (!open) return null;
+  return <JobFormModalContent {...props} />;
 }
 
 export {

@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { DeadlineTag } from "@/components/job-list/DeadlineTag";
 import { NotesField } from "@/components/job-list/NotesField";
 import { StatusPopover } from "@/components/job-list/StatusPopover";
+import { JobAttachmentsSection } from "@/components/job-attachments/JobAttachmentsSection";
 import { JobFormPrimaryFields } from "@/components/JobFormPrimaryFields";
 import { JobFormTrackingFields } from "@/components/JobFormTrackingFields";
 import { useLocale } from "@/components/LocaleProvider";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { formatCompanyName, formatDate } from "@/lib/format";
 import { formatTemplate, workTypeLabel } from "@/lib/i18n";
 import { jobToFormValues } from "@/lib/job-form-mappers";
@@ -111,21 +113,11 @@ export function DetailPanel({
   const { t } = useLocale();
   const panelRef = useRef<HTMLElement>(null);
 
-  useEffect(() => {
-    if (!job) return;
-
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") onClose();
-    }
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [job, onClose]);
-
-  const jobId = job?.id ?? null;
-  useEffect(() => {
-    if (jobId) panelRef.current?.focus();
-  }, [jobId]);
+  useFocusTrap({
+    enabled: Boolean(job),
+    containerRef: panelRef,
+    onClose,
+  });
 
   if (!job) return null;
 
@@ -145,6 +137,7 @@ export function DetailPanel({
         ref={panelRef}
         tabIndex={-1}
         role="dialog"
+        aria-modal="true"
         aria-label={job.title}
         className="animate-panel-in fixed inset-y-0 right-0 z-50 flex w-full max-w-[440px] flex-col border-l border-border bg-surface-solid outline-none"
       >
@@ -265,6 +258,8 @@ export function DetailPanel({
                   }}
                 />
               </section>
+
+              <JobAttachmentsSection key={job.id} jobId={job.id} />
 
               <section>
                 <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">

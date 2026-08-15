@@ -41,8 +41,12 @@ function getStoredLocale(): Locale {
   const fromDom = document.documentElement.getAttribute("lang");
   if (isLocale(fromDom)) return fromDom;
 
-  const stored = window.localStorage.getItem(LOCALE_STORAGE_KEY);
-  return isLocale(stored) ? stored : DEFAULT_LOCALE;
+  try {
+    const stored = window.localStorage.getItem(LOCALE_STORAGE_KEY);
+    return isLocale(stored) ? stored : DEFAULT_LOCALE;
+  } catch {
+    return DEFAULT_LOCALE;
+  }
 }
 
 function subscribe(onStoreChange: () => void) {
@@ -65,7 +69,11 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
 
   const setLocale = useCallback((next: Locale) => {
     applyLocale(next);
-    window.localStorage.setItem(LOCALE_STORAGE_KEY, next);
+    try {
+      window.localStorage.setItem(LOCALE_STORAGE_KEY, next);
+    } catch {
+      // Locale still applies in-memory if storage is full or blocked.
+    }
     window.dispatchEvent(new Event(LOCALE_CHANGE_EVENT));
   }, []);
 

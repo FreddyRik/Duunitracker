@@ -1,4 +1,16 @@
+import { jobAttachmentBackupSchema } from "@/lib/attachment-schema";
+import {
+  exportAttachmentBackups,
+  importAttachmentBackups,
+} from "@/lib/attachments-store";
 import { formatCompanyName, todayDateString } from "@/lib/format";
+import { StorageError } from "@/lib/browser-storage";
+import {
+  extractBackupDocument,
+  jobApplicationSchema,
+  parseStoredJobsList,
+  parseStrictJobs,
+} from "@/lib/job-schema";
 import {
   applyAppliedSideEffects,
   applyStatusSideEffects,
@@ -7,88 +19,153 @@ import {
   validateCreateInput,
   validateUpdatePatch,
 } from "@/lib/job-validation";
-import { JOBS_STORAGE_KEY } from "@/lib/site-config";
+import { notifyJobsChanged } from "@/lib/jobs-sync";
+import { getOfflineStore } from "@/lib/offline-adapter";
+import {
+  MAX_BACKUP_FILE_BYTES,
+  MAX_STORED_JOBS,
+} from "@/lib/site-config";
 import { ensureStorageMigrated } from "@/lib/storage-migration";
 import { ValidationError } from "@/lib/validate";
+import type { JobAttachmentBackup } from "@/types/attachment";
+import { JOBS_SCHEMA_VERSION, type JobsBackupDocument } from "@/types/backup";
 import type { CreateJobInput, JobApplication, UpdateJobInput } from "@/types/job";
+import type { OfflineStore } from "@/types/offline-store";
 
-export { JOBS_STORAGE_KEY };
+export { JOBS_STORAGE_KEY } from "@/lib/site-config";
 export { ValidationError };
 
-function assertBrowser(): void {
-  if (typeof window === "undefined") {
-    throw new Error("Job storage is only available in the browser");
-  }
-}
+export type ReadJobsResult = {
+  jobs: JobApplication[];
+  skippedCount: number;
+};
 
-function parseStoredJobs(raw: string): JobApplication[] {
-  try {
-    const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed)) {
-      throw new Error("Stored jobs are not an array");
-    }
-    return parsed
-      .filter(isJobApplication)
-      .map(normalizeJob)
-      .sort(
-        (a, b) =>
-          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-      );
-  } catch {
-    return [];
-  }
-}
+export type ParsedJobsBackup = {
+  jobs: JobApplication[];
+  attachments: JobAttachmentBackup[];
+};
 
-function isJobApplication(value: unknown): value is JobApplication {
-  if (!value || typeof value !== "object") {
-    return false;
-  }
+let refuseOverwriteCorrupted = false;
 
-  const job = value as Record<string, unknown>;
-  return (
-    typeof job.id === "string" &&
-    typeof job.url === "string" &&
-    typeof job.title === "string" &&
-    typeof job.company === "string" &&
-    typeof job.applied === "boolean" &&
-    typeof job.status === "string" &&
-    typeof job.notes === "string" &&
-    typeof job.createdAt === "string" &&
-    typeof job.updatedAt === "string"
+function sortJobs(jobs: JobApplication[]): JobApplication[] {
+  return [...jobs].sort(
+    (a, b) =>
+      new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
   );
 }
 
-function writeJobs(jobs: JobApplication[]): void {
-  assertBrowser();
-  ensureStorageMigrated();
-  window.localStorage.setItem(JOBS_STORAGE_KEY, `${JSON.stringify(jobs, null, 2)}\n`);
-}
-
-export function readJobs(): JobApplication[] {
-  assertBrowser();
-  ensureStorageMigrated();
-  const raw = window.localStorage.getItem(JOBS_STORAGE_KEY);
-  if (!raw) {
-    return [];
-  }
-  return parseStoredJobs(raw);
-}
-
-export function replaceJobs(jobs: JobApplication[]): JobApplication[] {
-  const normalized = jobs
-    .filter(isJobApplication)
-    .map(normalizeJob)
-    .sort(
-      (a, b) =>
-        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+function assertWritable(): void {
+  if (refuseOverwriteCorrupted) {
+    throw new StorageError(
+      "overwrite_blocked",
+      "Refusing to overwrite unreadable job data",
     );
-  writeJobs(normalized);
+  }
+}
+
+function parseAttachmentBackups(items: unknown[]): JobAttachmentBackup[] {
+  const attachments: JobAttachmentBackup[] = [];
+  for (let index = 0; index < items.length; index += 1) {
+    const result = jobAttachmentBackupSchema.safeParse(items[index]);
+    if (!result.success) {
+      throw new ValidationError(
+        `Attachment ${index + 1} failed schema validation`,
+        "invalid_schema",
+      );
+    }
+    attachments.push(result.data);
+  }
+  return attachments;
+}
+
+async function loadValidatedJobs(store: OfflineStore): Promise<ReadJobsResult> {
+  const items = await store.listJobs();
+  const { jobs, skippedCount } = parseStoredJobsList(items);
+  if (items.length > 0 && jobs.length === 0) {
+    refuseOverwriteCorrupted = true;
+    throw new StorageError(
+      "corrupted",
+      "Stored job data could not be read",
+    );
+  }
+
+  refuseOverwriteCorrupted = false;
+  return {
+    jobs: sortJobs(jobs.map(normalizeJob)),
+    skippedCount,
+  };
+}
+
+export function serializeJobsBackup(
+  jobs: JobApplication[],
+  attachments: JobAttachmentBackup[] = [],
+): string {
+  const document: JobsBackupDocument = {
+    schemaVersion: JOBS_SCHEMA_VERSION,
+    exportedAt: new Date().toISOString(),
+    jobs: parseStrictJobs(jobs),
+    ...(attachments.length > 0 ? { attachments } : {}),
+  };
+  return `${JSON.stringify(document, null, 2)}\n`;
+}
+
+export async function readJobsDetailed(): Promise<ReadJobsResult> {
+  ensureStorageMigrated();
+  try {
+    const store = await getOfflineStore();
+    return await loadValidatedJobs(store);
+  } catch (error) {
+    if (error instanceof StorageError && error.code === "corrupted") {
+      refuseOverwriteCorrupted = true;
+    }
+    throw error;
+  }
+}
+
+export async function readJobs(): Promise<JobApplication[]> {
+  return (await readJobsDetailed()).jobs;
+}
+
+export async function replaceJobs(
+  jobs: JobApplication[],
+  attachments: JobAttachmentBackup[] = [],
+): Promise<JobApplication[]> {
+  const validated = jobs.map((job) => {
+    const result = jobApplicationSchema.safeParse(job);
+    if (!result.success) {
+      throw new ValidationError("Imported jobs failed schema validation", "invalid_schema");
+    }
+    return normalizeJob(result.data);
+  });
+
+  if (validated.length > MAX_STORED_JOBS) {
+    throw new ValidationError(
+      `Cannot store more than ${MAX_STORED_JOBS} jobs`,
+      "too_large",
+    );
+  }
+
+  const normalized = sortJobs(validated);
+  const store = await getOfflineStore();
+  refuseOverwriteCorrupted = false;
+  await store.replaceAllJobs(normalized);
+  await importAttachmentBackups(store, attachments);
+  notifyJobsChanged();
   return normalized;
 }
 
-export function createJob(input: CreateJobInput): JobApplication {
+export async function createJob(input: CreateJobInput): Promise<JobApplication> {
+  assertWritable();
   const validated = validateCreateInput(input);
-  const jobs = readJobs();
+  const store = await getOfflineStore();
+  const count = await store.countJobs();
+  if (count >= MAX_STORED_JOBS) {
+    throw new ValidationError(
+      `Cannot store more than ${MAX_STORED_JOBS} jobs`,
+      "too_large",
+    );
+  }
+
   const now = new Date().toISOString();
   const applied = validated.applied ?? false;
   const status =
@@ -118,16 +195,17 @@ export function createJob(input: CreateJobInput): JobApplication {
     updatedAt: now,
   };
 
-  jobs.unshift(job);
-  writeJobs(jobs);
+  await store.putJob(job);
+  notifyJobsChanged();
   return job;
 }
 
-export function updateJob(
+export async function updateJob(
   id: string,
   patch: UpdateJobInput,
-): JobApplication | null {
-  const jobs = readJobs();
+): Promise<JobApplication | null> {
+  assertWritable();
+  const jobs = await readJobs();
   const index = jobs.findIndex((job) => job.id === id);
   if (index === -1) return null;
 
@@ -148,32 +226,63 @@ export function updateJob(
     updatedAt: new Date().toISOString(),
   };
 
-  jobs[index] = updated;
-  writeJobs(jobs);
+  const store = await getOfflineStore();
+  await store.putJob(updated);
+  notifyJobsChanged();
   return updated;
 }
 
-export function deleteJob(id: string): boolean {
-  const jobs = readJobs();
-  const nextJobs = jobs.filter((job) => job.id !== id);
-  if (nextJobs.length === jobs.length) return false;
-  writeJobs(nextJobs);
+export async function deleteJob(id: string): Promise<boolean> {
+  assertWritable();
+  const jobs = await readJobs();
+  const exists = jobs.some((job) => job.id === id);
+  if (!exists) return false;
+
+  const store = await getOfflineStore();
+  await store.removeJob(id);
+  await store.removeAttachmentsByJob(id);
+  notifyJobsChanged();
   return true;
 }
 
+export function parseBackupDocument(raw: string): ParsedJobsBackup {
+  if (raw.length > MAX_BACKUP_FILE_BYTES) {
+    throw new ValidationError("Import file is too large", "too_large");
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw) as unknown;
+  } catch {
+    throw new ValidationError("Import file is not valid JSON", "invalid_json");
+  }
+
+  const extracted = extractBackupDocument(parsed, "strict");
+  if (extracted.jobs.length === 0) {
+    throw new ValidationError(
+      "Import file contains no job records",
+      "empty",
+    );
+  }
+
+  return {
+    jobs: sortJobs(parseStrictJobs(extracted.jobs).map(normalizeJob)),
+    attachments: parseAttachmentBackups(extracted.attachments),
+  };
+}
+
 export function parseJobsImport(raw: string): JobApplication[] {
-  const parsed = JSON.parse(raw) as unknown;
-  if (!Array.isArray(parsed)) {
-    throw new ValidationError("Import file must contain a JSON array of jobs");
-  }
+  return parseBackupDocument(raw).jobs;
+}
 
-  const jobs = parsed.filter(isJobApplication).map(normalizeJob);
-  if (jobs.length === 0 && parsed.length > 0) {
-    throw new ValidationError("No valid job records found in import file");
-  }
+export async function serializeCurrentBackup(
+  jobs: JobApplication[],
+): Promise<string> {
+  const store = await getOfflineStore();
+  const attachments = await exportAttachmentBackups(store);
+  return serializeJobsBackup(jobs, attachments);
+}
 
-  return jobs.sort(
-    (a, b) =>
-      new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-  );
+export function resetJobsLocalStoreForTests(): void {
+  refuseOverwriteCorrupted = false;
 }

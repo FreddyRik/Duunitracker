@@ -2,6 +2,8 @@ const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 
 const MAX_REDIRECTS = 5;
+const FETCH_TIMEOUT_MS = 15_000;
+const MAX_HTML_CHARS = 1_500_000;
 
 const CORS_HEADERS: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
@@ -16,7 +18,12 @@ function isDuunitoriHost(hostname: string): boolean {
 function isValidDuunitoriUrl(url: string): boolean {
   try {
     const parsed = new URL(url);
-    return parsed.protocol === "https:" && isDuunitoriHost(parsed.hostname);
+    if (parsed.protocol !== "https:") return false;
+    if (!isDuunitoriHost(parsed.hostname)) return false;
+    if (parsed.username || parsed.password) return false;
+    const path = parsed.pathname;
+    if (!path || path === "/") return false;
+    return true;
   } catch {
     return false;
   }
@@ -37,8 +44,14 @@ function isValidJobPageHtml(html: string): boolean {
   return /<html/i.test(trimmed) || /JobPosting/i.test(trimmed);
 }
 
-function jsonError(status: number, message: string): Response {
-  return new Response(JSON.stringify({ error: message }), {
+function isAbortError(error: unknown): boolean {
+  return error instanceof Error && error.name === "AbortError";
+}
+
+function jsonError(status: number, message: string, code?: string): Response {
+  const payload: { error: string; code?: string } = { error: message };
+  if (code) payload.code = code;
+  return new Response(JSON.stringify(payload), {
     status,
     headers: {
       ...CORS_HEADERS,
@@ -47,7 +60,18 @@ function jsonError(status: number, message: string): Response {
   });
 }
 
-async function fetchWithRedirects(startUrl: string): Promise<string> {
+function resolveRedirectUrl(location: string, currentUrl: string): string {
+  try {
+    return new URL(location, currentUrl).href;
+  } catch {
+    throw new Error("Redirect location was not a valid URL");
+  }
+}
+
+async function fetchWithRedirects(
+  startUrl: string,
+  signal: AbortSignal,
+): Promise<string> {
   let currentUrl = startUrl;
 
   for (let redirectCount = 0; redirectCount <= MAX_REDIRECTS; redirectCount++) {
@@ -55,21 +79,30 @@ async function fetchWithRedirects(startUrl: string): Promise<string> {
       throw new Error("Redirect left duunitori.fi");
     }
 
-    const response = await fetch(currentUrl, {
-      headers: {
-        "User-Agent": USER_AGENT,
-        Accept: "text/html,application/xhtml+xml",
-        "Accept-Language": "fi-FI,fi;q=0.9,en;q=0.8",
-      },
-      redirect: "manual",
-    });
+    let response: Response;
+    try {
+      response = await fetch(currentUrl, {
+        headers: {
+          "User-Agent": USER_AGENT,
+          Accept: "text/html,application/xhtml+xml",
+          "Accept-Language": "fi-FI,fi;q=0.9,en;q=0.8",
+        },
+        redirect: "manual",
+        signal,
+      });
+    } catch (error) {
+      if (isAbortError(error) || signal.aborted) {
+        throw new Error("Timed out fetching the job page");
+      }
+      throw new Error("Failed to reach the job page");
+    }
 
     if (response.status >= 300 && response.status < 400) {
       const location = response.headers.get("location");
       if (!location) {
         throw new Error("Redirect response missing location header");
       }
-      currentUrl = new URL(location, currentUrl).href;
+      currentUrl = resolveRedirectUrl(location, currentUrl);
       continue;
     }
 
@@ -77,7 +110,11 @@ async function fetchWithRedirects(startUrl: string): Promise<string> {
       throw new Error(`Failed to fetch job page (${response.status})`);
     }
 
-    return response.text();
+    const html = await response.text();
+    if (html.length > MAX_HTML_CHARS) {
+      throw new Error("Job page HTML is too large");
+    }
+    return html;
   }
 
   throw new Error("Too many redirects while fetching job page");
@@ -110,20 +147,30 @@ function landingPageHtml(workerOrigin: string): string {
 </html>`;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
 async function readTargetUrl(request: Request): Promise<string | null> {
   if (request.method === "GET") {
     return new URL(request.url).searchParams.get("url");
   }
 
   if (request.method === "POST") {
-    const body = (await request.json()) as { url?: string };
-    return typeof body.url === "string" ? body.url : null;
+    let bodyUnknown: unknown;
+    try {
+      bodyUnknown = await request.json();
+    } catch {
+      throw new Error("INVALID_JSON_BODY");
+    }
+    if (!isRecord(bodyUnknown)) return null;
+    return typeof bodyUnknown.url === "string" ? bodyUnknown.url : null;
   }
 
   return null;
 }
 
-export default {
+const worker = {
   async fetch(request: Request): Promise<Response> {
     if (request.method === "OPTIONS") {
       return new Response(null, { status: 204, headers: CORS_HEADERS });
@@ -133,7 +180,16 @@ export default {
       return jsonError(405, "Method not allowed");
     }
 
-    const targetUrl = await readTargetUrl(request);
+    let targetUrl: string | null;
+    try {
+      targetUrl = await readTargetUrl(request);
+    } catch (error) {
+      if (error instanceof Error && error.message === "INVALID_JSON_BODY") {
+        return jsonError(400, "Request body must be JSON", "invalid_request");
+      }
+      return jsonError(400, "URL is required", "invalid_url");
+    }
+
     if (!targetUrl?.trim()) {
       if (request.method === "GET") {
         const workerOrigin = new URL(request.url).origin;
@@ -146,18 +202,29 @@ export default {
         });
       }
 
-      return jsonError(400, "URL is required");
+      return jsonError(400, "URL is required", "invalid_url");
     }
 
     const url = targetUrl.trim();
     if (!isValidDuunitoriUrl(url)) {
-      return jsonError(400, "URL must be a duunitori.fi job posting link");
+      return jsonError(
+        400,
+        "URL must be a duunitori.fi job posting link",
+        "invalid_url",
+      );
     }
 
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+
     try {
-      const html = await fetchWithRedirects(url);
+      const html = await fetchWithRedirects(url, controller.signal);
       if (!isValidJobPageHtml(html)) {
-        return jsonError(502, "Blocked or invalid Duunitori page HTML");
+        return jsonError(
+          502,
+          "Blocked or invalid Duunitori page HTML",
+          "invalid_html",
+        );
       }
 
       return new Response(html, {
@@ -170,7 +237,20 @@ export default {
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Failed to fetch job page";
-      return jsonError(502, message);
+      if (message.includes("Timed out")) {
+        return jsonError(504, message, "timeout");
+      }
+      if (message.includes("too large")) {
+        return jsonError(502, message, "too_large");
+      }
+      if (message.includes("Redirect")) {
+        return jsonError(502, message, "redirect");
+      }
+      return jsonError(502, message, "network");
+    } finally {
+      clearTimeout(timeout);
     }
   },
 };
+
+export default worker;

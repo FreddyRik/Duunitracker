@@ -1,4 +1,9 @@
 import {
+  readStorageItemSoft,
+  removeStorageItem,
+  writeStorageItemSoft,
+} from "@/lib/browser-storage";
+import {
   JOBS_STORAGE_KEY,
   LEGACY_JOBS_STORAGE_KEY,
   LEGACY_THEME_STORAGE_KEY,
@@ -6,27 +11,34 @@ import {
 } from "@/lib/site-config";
 
 function migrateKey(newKey: string, legacyKey: string): void {
-  if (typeof window === "undefined") return;
-
-  const existing = window.localStorage.getItem(newKey);
+  const existing = readStorageItemSoft(newKey);
   if (existing !== null) {
-    window.localStorage.removeItem(legacyKey);
+    removeStorageItem(legacyKey);
     return;
   }
 
-  const legacy = window.localStorage.getItem(legacyKey);
+  const legacy = readStorageItemSoft(legacyKey);
   if (legacy === null) return;
 
-  window.localStorage.setItem(newKey, legacy);
-  window.localStorage.removeItem(legacyKey);
+  if (writeStorageItemSoft(newKey, legacy)) {
+    removeStorageItem(legacyKey);
+  }
 }
 
 let migrated = false;
 
+export function resetStorageMigrationForTests(): void {
+  migrated = false;
+}
+
 /** One-time copy of legacy job-tracker-* keys into duunitracker-*. */
 export function ensureStorageMigrated(): void {
   if (typeof window === "undefined" || migrated) return;
-  migrateKey(JOBS_STORAGE_KEY, LEGACY_JOBS_STORAGE_KEY);
-  migrateKey(THEME_STORAGE_KEY, LEGACY_THEME_STORAGE_KEY);
-  migrated = true;
+  try {
+    migrateKey(JOBS_STORAGE_KEY, LEGACY_JOBS_STORAGE_KEY);
+    migrateKey(THEME_STORAGE_KEY, LEGACY_THEME_STORAGE_KEY);
+    migrated = true;
+  } catch {
+    // Migration must never prevent the app from loading.
+  }
 }

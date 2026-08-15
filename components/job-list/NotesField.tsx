@@ -31,6 +31,7 @@ export function NotesField({
       <textarea
         key={notes}
         defaultValue={notes}
+        aria-label={t.list.notes}
         onBlur={(event) => {
           if (event.target.value !== notes) {
             void onSave(event.target.value);

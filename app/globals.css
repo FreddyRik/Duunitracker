@@ -225,8 +225,15 @@ h3 {
   background: var(--accent-soft);
 }
 
-/* Inset focus rings never shift layout or bleed past a container edge. */
+/* Offset rings on controls; inset rings on fields so the caret stays visible. */
 :focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
   outline: none;
   box-shadow: inset 0 0 0 1.5px var(--accent);
 }
@@ -586,5 +593,38 @@ h3 {
   .landing-row {
     opacity: 1;
     transform: none;
+  }
+}
+
+@page {
+  size: A4;
+  margin: 14mm 12mm;
+}
+
+@media print {
+  body {
+    background: #fff !important;
+    color: #111 !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  #official-activity-report {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    color: #111 !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  #official-activity-report table {
+    break-inside: auto;
+  }
+
+  #official-activity-report tr {
+    break-inside: avoid;
   }
 }

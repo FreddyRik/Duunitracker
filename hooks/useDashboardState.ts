@@ -1,12 +1,24 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useDeferredValue, useEffect, useMemo, useState } from "react";
 import { useLocale } from "@/components/LocaleProvider";
 import { useBackupReminder } from "@/hooks/useBackupReminder";
 import { useJobMutations } from "@/hooks/useJobMutations";
 import { useModalState } from "@/hooks/useModalState";
-import { parseJobsImport, readJobs, replaceJobs } from "@/lib/jobs-local-store";
-import { ValidationError } from "@/lib/validate";
+import { filterJobs } from "@/lib/job-insights";
+import {
+  parseBackupDocument,
+  readJobsDetailed,
+  replaceJobs,
+  serializeCurrentBackup,
+} from "@/lib/jobs-local-store";
+import { subscribeJobsChanged } from "@/lib/jobs-sync";
+import { MAX_BACKUP_FILE_BYTES } from "@/lib/site-config";
+import {
+  skippedRecordsMessage,
+  toUserFacingError,
+} from "@/lib/user-facing-errors";
+import type { DashboardViewId } from "@/types/analytics";
 import type { JobApplication, JobListFilter } from "@/types/job";
 
 export function useDashboardState() {
@@ -18,34 +30,63 @@ export function useDashboardState() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<JobListFilter>("All");
+  const [dashboardView, setDashboardView] = useState<DashboardViewId>("list");
   const [commandBarOpen, setCommandBarOpen] = useState(false);
   const [activeRowId, setActiveRowId] = useState<string | null>(null);
   const modals = useModalState();
   const backupReminder = useBackupReminder(jobs.length);
+  const deferredSearch = useDeferredValue(search);
+  const { acknowledgeExport, dismissReminder, showReminder } = backupReminder;
 
   useEffect(() => {
-    setJobs(readJobs());
-    setHydrated(true);
+    let cancelled = false;
+
+    async function hydrate() {
+      try {
+        const result = await readJobsDetailed();
+        if (cancelled) return;
+        setJobs(result.jobs);
+        if (result.skippedCount > 0) {
+          setError(skippedRecordsMessage(result.skippedCount, t));
+        }
+      } catch (loadError) {
+        if (cancelled) return;
+        setJobs([]);
+        setError(toUserFacingError(loadError, t, t.errors.storageCorrupted));
+      } finally {
+        if (!cancelled) setHydrated(true);
+      }
+    }
+
+    void hydrate();
+
+    const unsubscribe = subscribeJobsChanged(() => {
+      void (async () => {
+        try {
+          const result = await readJobsDetailed();
+          if (cancelled) return;
+          setJobs(result.jobs);
+        } catch (loadError) {
+          if (cancelled) return;
+          setError(
+            toUserFacingError(loadError, t, t.errors.storageCorrupted),
+          );
+        }
+      })();
+    });
+
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- hydrate once; locale catalog is enough for load errors
   }, []);
 
-  const filteredJobs = useMemo(() => {
-    const query = search.trim().toLowerCase();
-    return jobs.filter((job) => {
-      const matchesStatus =
-        statusFilter === "All"
-          ? true
-          : statusFilter === "InProgress"
-            ? job.status === "Interview" || job.status === "Offer"
-            : job.status === statusFilter;
-      const matchesSearch =
-        query.length === 0
-          ? true
-          : job.title.toLowerCase().includes(query) ||
-            job.company.toLowerCase().includes(query) ||
-            (job.description?.toLowerCase().includes(query) ?? false);
-      return matchesStatus && matchesSearch;
-    });
-  }, [jobs, search, statusFilter]);
+  const filteredJobs = useMemo(
+    () =>
+      filterJobs(jobs, { search: deferredSearch, status: statusFilter }),
+    [jobs, deferredSearch, statusFilter],
+  );
 
   const panelJob = useMemo(
     () => jobs.find((job) => job.id === modals.panelJobId) ?? null,
@@ -62,48 +103,54 @@ export function useDashboardState() {
     setCreateModalOpen: modals.setCreateModalOpen,
   });
 
-  function clearFilters() {
+  const clearFilters = useCallback(() => {
     setSearch("");
     setStatusFilter("All");
-  }
+  }, []);
 
-  function handleExport() {
-    setError(null);
-    const blob = new Blob([`${JSON.stringify(jobs, null, 2)}\n`], {
-      type: "application/json",
-    });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = `job-applications-${new Date().toISOString().slice(0, 10)}.json`;
-    anchor.click();
-    URL.revokeObjectURL(url);
-    backupReminder.acknowledgeExport();
-  }
-
-  async function handleImportBackup(file: File) {
+  const handleExport = useCallback(async () => {
     setError(null);
     try {
-      const raw = await file.text();
-      const imported = parseJobsImport(raw);
-      const merged = replaceJobs(imported);
-      setJobs(merged);
-    } catch (importError) {
-      if (importError instanceof ValidationError) {
-        setError(importError.message);
-        return;
-      }
-      if (importError instanceof SyntaxError) {
-        setError(t.errors.invalidJson);
-        return;
-      }
-      setError(
-        importError instanceof Error
-          ? importError.message
-          : t.errors.importBackupFailed,
-      );
+      const blob = new Blob([await serializeCurrentBackup(jobs)], {
+        type: "application/json",
+      });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `job-applications-${new Date().toISOString().slice(0, 10)}.json`;
+      anchor.click();
+      URL.revokeObjectURL(url);
+      acknowledgeExport();
+    } catch (exportError) {
+      setError(toUserFacingError(exportError, t, t.errors.importBackupFailed));
     }
-  }
+  }, [jobs, t, acknowledgeExport]);
+
+  const handleImportBackup = useCallback(
+    async (file: File) => {
+      setError(null);
+      if (file.size > MAX_BACKUP_FILE_BYTES) {
+        setError(t.errors.importTooLarge);
+        return;
+      }
+      if (file.size === 0) {
+        setError(t.errors.importEmpty);
+        return;
+      }
+
+      try {
+        const raw = await file.text();
+        const imported = parseBackupDocument(raw);
+        const merged = await replaceJobs(imported.jobs, imported.attachments);
+        setJobs(merged);
+      } catch (importError) {
+        setError(
+          toUserFacingError(importError, t, t.errors.importBackupFailed),
+        );
+      }
+    },
+    [t],
+  );
 
   return {
     jobs,
@@ -114,19 +161,21 @@ export function useDashboardState() {
     error,
     search,
     statusFilter,
+    dashboardView,
     commandBarOpen,
     activeRowId,
     panelJob,
     setSearch,
     setStatusFilter,
+    setDashboardView,
     setCommandBarOpen,
     setActiveRowId,
     setError,
     clearFilters,
     handleExport,
     handleImportBackup,
-    showBackupReminder: backupReminder.showReminder,
-    dismissBackupReminder: backupReminder.dismissReminder,
+    showBackupReminder: showReminder,
+    dismissBackupReminder: dismissReminder,
     ...modals,
     ...mutations,
   };

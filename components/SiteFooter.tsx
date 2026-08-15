@@ -51,7 +51,7 @@ export function SiteFooter() {
   ];
 
   return (
-    <footer className="mt-8 border-t border-border pt-6 text-xs text-muted">
+    <footer className="no-print mt-8 border-t border-border pt-6 text-xs text-muted">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p>{t.footer.privacy}</p>
         <p>© {new Date().getFullYear()} Freddy</p>

@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { StatusDot } from "@/components/job-list/StatusDot";
 import { useLocale } from "@/components/LocaleProvider";
 import { statusLabel } from "@/lib/i18n";
-import { countByFilter } from "@/lib/job-insights";
+import type { Messages } from "@/lib/i18n/types";
+import { countAllFilters } from "@/lib/job-insights";
+import { nextIndexOnArrowKey } from "@/lib/keyboard";
 import type { JobApplication, JobListFilter, JobStatus } from "@/types/job";
 
 type StatusTabsProps = {
@@ -24,10 +26,24 @@ const TABS: { filter: JobListFilter; status: JobStatus | null }[] = [
   { filter: "Rejected", status: "Rejected" },
 ];
 
-export function StatusTabs({ jobs, value, onChange }: StatusTabsProps) {
+function labelFor(
+  filter: JobListFilter,
+  status: JobStatus | null,
+  allLabel: string,
+  inProgressLabel: string,
+  catalog: Messages,
+): string {
+  if (filter === "All") return allLabel;
+  if (filter === "InProgress") return inProgressLabel;
+  if (!status) return filter;
+  return statusLabel(catalog, status);
+}
+
+function StatusTabsComponent({ jobs, value, onChange }: StatusTabsProps) {
   const { t } = useLocale();
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const [indicator, setIndicator] = useState({ left: 0, width: 0 });
+  const counts = useMemo(() => countAllFilters(jobs), [jobs]);
 
   const activeIndex = TABS.findIndex((tab) => tab.filter === value);
 
@@ -36,24 +52,26 @@ export function StatusTabs({ jobs, value, onChange }: StatusTabsProps) {
     const node = tabRefs.current[activeIndex];
     if (!node) return;
     setIndicator({ left: node.offsetLeft, width: node.offsetWidth });
-  }, [activeIndex, jobs, t]);
+  }, [activeIndex, counts, t]);
 
-  function labelFor(filter: JobListFilter, status: JobStatus | null): string {
-    if (filter === "All") return t.ui.all;
-    if (filter === "InProgress") return t.filters.inProgress;
-    return statusLabel(t, status as JobStatus);
+  function handleKeyDown(event: React.KeyboardEvent, index: number) {
+    const next = nextIndexOnArrowKey(event.key, index, TABS.length);
+    if (next === null) return;
+    event.preventDefault();
+    onChange(TABS[next].filter);
+    tabRefs.current[next]?.focus();
   }
 
   return (
     <div
       role="tablist"
       aria-label={t.filters.statusLabel}
-      className="relative -mx-4 overflow-x-auto border-b border-border px-4 sm:mx-0 sm:px-0"
+      className="no-print relative -mx-4 overflow-x-auto border-b border-border px-4 sm:mx-0 sm:px-0"
     >
       <div className="relative flex w-max items-center gap-1">
         {TABS.map((tab, index) => {
           const active = tab.filter === value;
-          const count = countByFilter(jobs, tab.filter);
+          const count = counts[tab.filter];
 
           return (
             <button
@@ -64,7 +82,9 @@ export function StatusTabs({ jobs, value, onChange }: StatusTabsProps) {
               type="button"
               role="tab"
               aria-selected={active}
+              tabIndex={active ? 0 : -1}
               onClick={() => onChange(tab.filter)}
+              onKeyDown={(event) => handleKeyDown(event, index)}
               className={`flex items-center gap-1.5 whitespace-nowrap rounded-t-md px-3 py-2.5 text-xs transition-colors ${
                 active
                   ? "font-semibold text-foreground"
@@ -72,7 +92,15 @@ export function StatusTabs({ jobs, value, onChange }: StatusTabsProps) {
               }`}
             >
               {tab.status && <StatusDot status={tab.status} size="sm" />}
-              <span>{labelFor(tab.filter, tab.status)}</span>
+              <span>
+                {labelFor(
+                  tab.filter,
+                  tab.status,
+                  t.ui.all,
+                  t.filters.inProgress,
+                  t,
+                )}
+              </span>
               <span
                 className={`font-mono text-[11px] ${
                   active ? "text-muted-strong" : "text-muted"
@@ -97,3 +125,5 @@ export function StatusTabs({ jobs, value, onChange }: StatusTabsProps) {
     </div>
   );
 }
+
+export const StatusTabs = memo(StatusTabsComponent);

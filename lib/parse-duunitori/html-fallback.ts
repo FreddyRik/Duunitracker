@@ -29,7 +29,25 @@ function parseOgTitle(
 }
 
 export function parseHtmlFallback(html: string): Partial<ParsedJob> {
-  const $ = cheerio.load(html);
+  if (!html.trim()) return {};
+
+  let $: ReturnType<typeof cheerio.load>;
+  try {
+    $ = cheerio.load(html);
+  } catch {
+    return {};
+  }
+
+  try {
+    return extractFallbackFields($);
+  } catch {
+    return {};
+  }
+}
+
+function extractFallbackFields(
+  $: ReturnType<typeof cheerio.load>,
+): Partial<ParsedJob> {
   const result: Partial<ParsedJob> = {};
 
   const ogTitleContent = $("meta[property='og:title']").attr("content");
@@ -79,7 +97,7 @@ export function parseHtmlFallback(html: string): Partial<ParsedJob> {
     }
   }
 
-  const bodyText = $("body").text();
+  const bodyText = $("body").text().slice(0, 50_000);
   const deadlineMatch = bodyText.match(
     /(?:hakuaika|haku päättyy|deadline|viimeinen hakupäivä)[:\s]*([0-9]{1,2}\.[0-9]{1,2}\.[0-9]{2,4})/i,
   );
@@ -101,8 +119,25 @@ function plainTextFromElementHtml(elementHtml: string | null): string | null {
 }
 
 export function extractDescriptionFromHtml(html: string): string | null {
-  const $ = cheerio.load(html);
+  if (!html.trim()) return null;
 
+  let $: ReturnType<typeof cheerio.load>;
+  try {
+    $ = cheerio.load(html);
+  } catch {
+    return null;
+  }
+
+  try {
+    return extractLongestDescription($);
+  } catch {
+    return null;
+  }
+}
+
+function extractLongestDescription(
+  $: ReturnType<typeof cheerio.load>,
+): string | null {
   const selectors = [
     ".job-box__text",
     ".job-box__description",

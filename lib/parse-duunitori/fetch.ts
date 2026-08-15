@@ -1,35 +1,22 @@
+import { ParseJobError } from "@/lib/parse-duunitori/errors";
+import { isDuunitoriJobUrl } from "@/lib/parse-duunitori/url";
+import { MAX_JOB_HTML_CHARS } from "@/lib/site-config";
+
 const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 
 const MAX_REDIRECTS = 5;
 const BLOCK_STATUSES = new Set([403, 429, 503]);
 
-function isDuunitoriHost(hostname: string): boolean {
-  return hostname === "duunitori.fi" || hostname.endsWith(".duunitori.fi");
-}
+export { assertDuunitoriHttpsUrl, isDuunitoriJobUrl } from "@/lib/parse-duunitori/url";
 
-function isDuunitoriUrl(url: string): boolean {
-  try {
-    const parsed = new URL(url);
-    return parsed.protocol === "https:" && isDuunitoriHost(parsed.hostname);
-  } catch {
-    return false;
-  }
-}
-
-export function assertDuunitoriHttpsUrl(url: string): void {
-  if (!isDuunitoriUrl(url)) {
-    throw new Error("URL must be a duunitori.fi job posting link");
-  }
-}
-
-function isBlockedChallengePage(html: string): boolean {
+export function isBlockedChallengePage(html: string): boolean {
   return /Just a moment|cf-browser-verification|challenge-platform|Attention Required/i.test(
     html,
   );
 }
 
-function isValidJobPageHtml(html: string): boolean {
+export function isValidJobPageHtml(html: string): boolean {
   const trimmed = html.trim();
   if (!trimmed) {
     return false;
@@ -42,14 +29,27 @@ function isValidJobPageHtml(html: string): boolean {
   return /<html/i.test(trimmed) || /JobPosting/i.test(trimmed);
 }
 
-function parseDirectFetchStatus(message: string): number | null {
-  const match = message.match(/Failed to fetch job page \((\d+)\)/);
-  if (!match) {
-    return null;
+function assertHtmlSize(html: string): void {
+  if (html.length > MAX_JOB_HTML_CHARS) {
+    throw new ParseJobError("too_large", "Job page HTML is too large");
   }
+}
 
-  const status = Number(match[1]);
-  return Number.isFinite(status) ? status : null;
+async function readResponseHtml(response: Response): Promise<string> {
+  const html = await response.text();
+  assertHtmlSize(html);
+  return html;
+}
+
+function resolveRedirectUrl(location: string, currentUrl: string): string {
+  try {
+    return new URL(location, currentUrl).href;
+  } catch {
+    throw new ParseJobError(
+      "redirect",
+      "Redirect location was not a valid URL",
+    );
+  }
 }
 
 async function fetchDirectHtml(
@@ -59,43 +59,72 @@ async function fetchDirectHtml(
   let currentUrl = startUrl;
 
   for (let redirectCount = 0; redirectCount <= MAX_REDIRECTS; redirectCount++) {
-    assertDuunitoriHttpsUrl(currentUrl);
+    if (!isDuunitoriJobUrl(currentUrl)) {
+      throw new ParseJobError(
+        "redirect",
+        "Redirect left duunitori.fi or was not a job posting link",
+      );
+    }
 
-    const response = await fetch(currentUrl, {
-      headers: {
-        "User-Agent": USER_AGENT,
-        Accept: "text/html,application/xhtml+xml",
-        "Accept-Language": "fi-FI,fi;q=0.9,en;q=0.8",
-      },
-      signal,
-      cache: "no-store",
-      redirect: "manual",
-    });
+    let response: Response;
+    try {
+      response = await fetch(currentUrl, {
+        headers: {
+          "User-Agent": USER_AGENT,
+          Accept: "text/html,application/xhtml+xml",
+          "Accept-Language": "fi-FI,fi;q=0.9,en;q=0.8",
+        },
+        signal,
+        cache: "no-store",
+        redirect: "manual",
+      });
+    } catch (error) {
+      if (error instanceof ParseJobError) throw error;
+      if (error instanceof TypeError) {
+        throw new ParseJobError("network", "Failed to reach the job page");
+      }
+      throw error;
+    }
 
     if (response.status >= 300 && response.status < 400) {
       const location = response.headers.get("location");
       if (!location) {
-        throw new Error("Redirect response missing location header");
+        throw new ParseJobError(
+          "redirect",
+          "Redirect response missing location header",
+        );
       }
-      currentUrl = new URL(location, currentUrl).href;
+      currentUrl = resolveRedirectUrl(location, currentUrl);
       continue;
     }
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch job page (${response.status})`);
+      throw new ParseJobError(
+        "network",
+        `Failed to fetch job page (${response.status})`,
+        response.status,
+      );
     }
 
-    return response.text();
+    return readResponseHtml(response);
   }
 
-  throw new Error("Too many redirects while fetching job page");
+  throw new ParseJobError(
+    "redirect",
+    "Too many redirects while fetching job page",
+  );
 }
 
 async function fetchViaJinaReader(
   url: string,
   signal: AbortSignal,
 ): Promise<string> {
-  assertDuunitoriHttpsUrl(url);
+  if (!isDuunitoriJobUrl(url)) {
+    throw new ParseJobError(
+      "invalid_url",
+      "URL must be a duunitori.fi job posting link",
+    );
+  }
 
   const headers: Record<string, string> = {
     Accept: "text/html,application/xhtml+xml",
@@ -108,19 +137,37 @@ async function fetchViaJinaReader(
     headers.Authorization = `Bearer ${jinaApiKey}`;
   }
 
-  const response = await fetch(`https://r.jina.ai/${url}`, {
-    headers,
-    signal,
-    cache: "no-store",
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch job page via proxy (${response.status})`);
+  let response: Response;
+  try {
+    response = await fetch(`https://r.jina.ai/${url}`, {
+      headers,
+      signal,
+      cache: "no-store",
+    });
+  } catch (error) {
+    if (error instanceof TypeError) {
+      throw new ParseJobError(
+        "network",
+        "Failed to fetch job page via proxy",
+      );
+    }
+    throw error;
   }
 
-  const html = await response.text();
+  if (!response.ok) {
+    throw new ParseJobError(
+      "network",
+      `Failed to fetch job page via proxy (${response.status})`,
+      response.status,
+    );
+  }
+
+  const html = await readResponseHtml(response);
   if (!isValidJobPageHtml(html)) {
-    throw new Error("Failed to fetch job page via proxy (invalid HTML)");
+    throw new ParseJobError(
+      "invalid_html",
+      "Failed to fetch job page via proxy (invalid HTML)",
+    );
   }
 
   return html;
@@ -131,13 +178,25 @@ export async function fetchDuunitoriHtml(
   signal: AbortSignal,
 ): Promise<string> {
   try {
-    return await fetchDirectHtml(startUrl, signal);
+    const html = await fetchDirectHtml(startUrl, signal);
+    if (isValidJobPageHtml(html)) {
+      return html;
+    }
+    if (isBlockedChallengePage(html) || !html.trim()) {
+      return await fetchViaJinaReader(startUrl, signal);
+    }
+    throw new ParseJobError("invalid_html", "Job page HTML was not a valid posting");
   } catch (error) {
-    if (error instanceof Error) {
-      const status = parseDirectFetchStatus(error.message);
-      if (status !== null && BLOCK_STATUSES.has(status)) {
+    if (signal.aborted) {
+      throw new ParseJobError("timeout", "Timed out fetching the job page");
+    }
+
+    if (error instanceof ParseJobError) {
+      const status = error.httpStatus;
+      if (status !== undefined && BLOCK_STATUSES.has(status)) {
         return await fetchViaJinaReader(startUrl, signal);
       }
+      throw error;
     }
 
     throw error;

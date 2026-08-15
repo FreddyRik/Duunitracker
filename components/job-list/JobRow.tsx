@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { memo, useState } from "react";
 import { DeadlineTag } from "@/components/job-list/DeadlineTag";
 import { NotesField } from "@/components/job-list/NotesField";
 import { PipelineRail } from "@/components/job-list/PipelineRail";
@@ -20,7 +20,7 @@ type JobRowProps = {
   active: boolean;
 } & JobListHandlers;
 
-export function JobRow({
+export const JobRow = memo(function JobRow({
   job,
   active,
   onUpdate,
@@ -48,7 +48,7 @@ export function JobRow({
   return (
     <li
       data-row-id={job.id}
-      className={`group relative border-b border-border transition-colors last:border-b-0 ${
+      className={`group relative border-b border-border transition-colors last:border-b-0 has-[:focus-visible]:bg-row-active ${
         menuOpen ? "z-30" : ""
       } ${active ? "bg-row-active" : "hover:bg-row-hover"}`}
     >
@@ -69,6 +69,7 @@ export function JobRow({
             <button
               type="button"
               onClick={() => onOpen(job)}
+              aria-current={active ? "true" : undefined}
               className="truncate text-left text-sm font-medium text-foreground after:absolute after:inset-0 after:content-['']"
             >
               {job.title}
@@ -171,4 +172,4 @@ export function JobRow({
       )}
     </li>
   );
-}
+});

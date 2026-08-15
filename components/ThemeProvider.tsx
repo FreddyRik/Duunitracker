@@ -42,8 +42,12 @@ function getStoredTheme(): Theme {
   const fromDom = document.documentElement.getAttribute("data-theme");
   if (isTheme(fromDom)) return fromDom;
 
-  const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
-  return isTheme(stored) ? stored : DEFAULT_THEME;
+  try {
+    const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
+    return isTheme(stored) ? stored : DEFAULT_THEME;
+  } catch {
+    return DEFAULT_THEME;
+  }
 }
 
 function subscribe(onStoreChange: () => void) {
@@ -64,7 +68,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const setTheme = useCallback((next: Theme) => {
     applyTheme(next);
-    window.localStorage.setItem(THEME_STORAGE_KEY, next);
+    try {
+      window.localStorage.setItem(THEME_STORAGE_KEY, next);
+    } catch {
+      // Theme still applies in-memory if storage is full or blocked.
+    }
     window.dispatchEvent(new Event(THEME_CHANGE_EVENT));
   }, []);
 

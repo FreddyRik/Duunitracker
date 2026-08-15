@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Kbd } from "@/components/Kbd";
 import { useLocale } from "@/components/LocaleProvider";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { COMMAND_INPUT_ID } from "@/lib/ui-constants";
 
 type CommandBarProps = {
@@ -26,24 +27,14 @@ function CommandBarContent({
 }: CommandBarContentProps) {
   const { t } = useLocale();
   const [url, setUrl] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    inputRef.current?.focus();
-
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") onClose();
-    }
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [onClose]);
+  useFocusTrap({
+    enabled: true,
+    containerRef: dialogRef,
+    onClose,
+    lockScroll: true,
+  });
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -62,9 +53,11 @@ function CommandBarContent({
       />
 
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-label={t.importBar.urlLabel}
+        tabIndex={-1}
         className="animate-command-in relative mt-[22vh] w-full max-w-[560px] border border-border bg-surface-solid shadow-2xl"
       >
         <form onSubmit={handleSubmit}>
@@ -73,7 +66,6 @@ function CommandBarContent({
               {t.importBar.urlLabel}
             </label>
             <input
-              ref={inputRef}
               id={COMMAND_INPUT_ID}
               type="url"
               value={url}

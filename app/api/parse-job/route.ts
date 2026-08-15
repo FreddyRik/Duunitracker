@@ -1,39 +1,78 @@
 import { NextResponse } from "next/server";
+import { parseJobRequestSchema } from "@/lib/job-schema";
 import {
   parseDuunitoriJob,
   parseDuunitoriJobFromHtml,
 } from "@/lib/parse-duunitori";
-import type { ParseJobRequest } from "@/types/job";
+import {
+  isParseJobError,
+  toParseJobError,
+} from "@/lib/parse-duunitori/errors";
+import type { ParseJobErrorCode } from "@/types/parse-job";
 
 export const runtime = "nodejs";
 
+function statusForCode(code: ParseJobErrorCode): number {
+  switch (code) {
+    case "invalid_url":
+    case "invalid_request":
+      return 400;
+    case "timeout":
+      return 504;
+    case "network":
+    case "blocked":
+    case "invalid_html":
+    case "unparseable":
+    case "too_large":
+    case "redirect":
+      return 502;
+    default:
+      return 500;
+  }
+}
+
+function errorResponse(code: ParseJobErrorCode, message: string) {
+  return NextResponse.json({ error: message, code }, {
+    status: statusForCode(code),
+    headers: { "Cache-Control": "no-store" },
+  });
+}
+
 export async function POST(request: Request) {
+  let bodyUnknown: unknown;
   try {
-    const body = (await request.json()) as ParseJobRequest;
+    bodyUnknown = await request.json();
+  } catch {
+    return errorResponse("invalid_request", "Request body must be JSON");
+  }
 
-    if (!body.url || typeof body.url !== "string") {
-      return NextResponse.json({ error: "URL is required" }, { status: 400 });
+  const body = parseJobRequestSchema.safeParse(bodyUnknown);
+  if (!body.success) {
+    const issue = body.error.issues[0];
+    const message = issue?.message ?? "Invalid parse request";
+    if (issue?.path[0] === "url") {
+      return errorResponse("invalid_url", "URL is required");
     }
+    if (issue?.path[0] === "html") {
+      return errorResponse("too_large", "Job page HTML is too large");
+    }
+    return errorResponse("invalid_request", message);
+  }
 
-    const url = body.url.trim();
+  try {
+    const url = body.data.url.trim();
     const parsed =
-      typeof body.html === "string" && body.html.length > 0
-        ? parseDuunitoriJobFromHtml(url, body.html)
+      typeof body.data.html === "string" && body.data.html.length > 0
+        ? parseDuunitoriJobFromHtml(url, body.data.html)
         : await parseDuunitoriJob(url);
 
-    return NextResponse.json(parsed);
+    return NextResponse.json(parsed, {
+      headers: { "Cache-Control": "no-store" },
+    });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Failed to parse job posting";
-
-    if (message.includes("duunitori.fi")) {
-      return NextResponse.json({ error: message }, { status: 400 });
-    }
-
-    if (message.includes("Failed to fetch")) {
-      return NextResponse.json({ error: message }, { status: 502 });
-    }
-
-    return NextResponse.json({ error: message }, { status: 500 });
+    const parsedError = isParseJobError(error)
+      ? error
+      : toParseJobError(error);
+    return errorResponse(parsedError.code, parsedError.message);
   }
 }

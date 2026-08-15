@@ -1,3 +1,4 @@
+import { isRecord } from "@/lib/validate";
 import { htmlToPlainText } from "@/lib/format";
 
 export function normalizeText(value: string | null | undefined): string | null {
@@ -22,35 +23,33 @@ export function extractLocationFromJobPosting(
       continue;
     }
 
-    if (typeof location === "object" && location !== null) {
-      const place = location as Record<string, unknown>;
-      const address = place.address;
+    if (!isRecord(location)) continue;
 
-      if (typeof address === "string") {
-        const normalized = normalizeText(address);
-        if (normalized) return normalized;
-      }
+    const address = location.address;
 
-      if (typeof address === "object" && address !== null) {
-        const addr = address as Record<string, unknown>;
-        const parts = [
-          addr.addressLocality,
-          addr.addressRegion,
-          addr.addressCountry,
-        ]
-          .map((part) => (typeof part === "string" ? part : null))
-          .filter(Boolean) as string[];
-
-        if (parts.length > 0) {
-          return parts.join(", ");
-        }
-      }
-
-      const name = normalizeText(
-        typeof place.name === "string" ? place.name : undefined,
-      );
-      if (name) return name;
+    if (typeof address === "string") {
+      const normalized = normalizeText(address);
+      if (normalized) return normalized;
     }
+
+    if (isRecord(address)) {
+      const parts = [
+        address.addressLocality,
+        address.addressRegion,
+        address.addressCountry,
+      ]
+        .map((part) => (typeof part === "string" ? part : null))
+        .filter((part): part is string => Boolean(part));
+
+      if (parts.length > 0) {
+        return parts.join(", ");
+      }
+    }
+
+    const name = normalizeText(
+      typeof location.name === "string" ? location.name : undefined,
+    );
+    if (name) return name;
   }
 
   return null;

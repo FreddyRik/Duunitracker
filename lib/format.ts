@@ -117,14 +117,18 @@ export function htmlToPlainText(html: string): string {
     return "";
   }
 
-  const withBreaks = trimmed
-    .replace(/<br\s*\/?>/gi, "\n")
-    .replace(new RegExp(`</(${BLOCK_END_TAGS})>`, "gi"), "\n\n")
-    .replace(/<li[^>]*>/gi, "\n- ")
-    .replace(/<\/li>/gi, "\n");
+  try {
+    const withBreaks = trimmed
+      .replace(/<br\s*\/?>/gi, "\n")
+      .replace(new RegExp(`</(${BLOCK_END_TAGS})>`, "gi"), "\n\n")
+      .replace(/<li[^>]*>/gi, "\n- ")
+      .replace(/<\/li>/gi, "\n");
 
-  const text = cheerio.load(withBreaks).root().text();
-  return normalizePlainTextLines(text);
+    const text = cheerio.load(withBreaks).root().text();
+    return normalizePlainTextLines(text);
+  } catch {
+    return normalizePlainTextLines(trimmed.replace(/<[^>]+>/g, " "));
+  }
 }
 
 export function todayDateString(): string {
@@ -133,4 +137,10 @@ export function todayDateString(): string {
   const month = String(now.getMonth() + 1).padStart(2, "0");
   const day = String(now.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+}
+
+export function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }

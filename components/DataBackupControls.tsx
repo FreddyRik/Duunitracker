@@ -52,6 +52,7 @@ export function DataBackupControls({
         ref={fileInputRef}
         type="file"
         accept="application/json,.json"
+        aria-label={t.backup.import}
         className="sr-only"
         onChange={handleFileChange}
       />

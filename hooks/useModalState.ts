@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import type { JobApplication, JobFormValues } from "@/types/job";
 
 export type PanelMode = "overview" | "edit";
@@ -13,6 +13,26 @@ export function useModalState() {
   const [panelJobId, setPanelJobId] = useState<string | null>(null);
   const [panelMode, setPanelMode] = useState<PanelMode>("overview");
 
+  const openPanel = useCallback((job: JobApplication) => {
+    setPanelJobId(job.id);
+    setPanelMode("overview");
+  }, []);
+
+  const openPanelEdit = useCallback((job: JobApplication) => {
+    setPanelJobId(job.id);
+    setPanelMode("edit");
+  }, []);
+
+  const closePanel = useCallback(() => {
+    setPanelJobId(null);
+    setPanelMode("overview");
+  }, []);
+
+  const closeCreate = useCallback(() => {
+    setCreateModalOpen(false);
+    setCreateDraft(null);
+  }, []);
+
   return {
     createModalOpen,
     createMode,
@@ -23,21 +43,9 @@ export function useModalState() {
     setCreateMode,
     setCreateDraft,
     setPanelMode,
-    openPanel(job: JobApplication) {
-      setPanelJobId(job.id);
-      setPanelMode("overview");
-    },
-    openPanelEdit(job: JobApplication) {
-      setPanelJobId(job.id);
-      setPanelMode("edit");
-    },
-    closePanel() {
-      setPanelJobId(null);
-      setPanelMode("overview");
-    },
-    closeCreate() {
-      setCreateModalOpen(false);
-      setCreateDraft(null);
-    },
+    openPanel,
+    openPanelEdit,
+    closePanel,
+    closeCreate,
   };
 }

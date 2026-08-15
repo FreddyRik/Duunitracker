@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { StatusDot } from "@/components/job-list/StatusDot";
 import { useLocale } from "@/components/LocaleProvider";
 import { statusLabel } from "@/lib/i18n";
+import { nextIndexOnArrowKey } from "@/lib/keyboard";
 import { JOB_STATUSES, type JobStatus } from "@/types/job";
 
 type StatusPopoverProps = {
@@ -26,11 +27,13 @@ export function StatusPopover({
     Math.max(0, JOB_STATUSES.indexOf(status)),
   );
   const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   function close() {
     setOpen(false);
     onOpenChange?.(false);
+    triggerRef.current?.focus();
   }
 
   function openMenu() {
@@ -66,26 +69,42 @@ export function StatusPopover({
     }
   }
 
+  function handleTriggerKeyDown(event: React.KeyboardEvent) {
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      event.stopPropagation();
+      openMenu();
+    }
+  }
+
   function handleMenuKeyDown(event: React.KeyboardEvent) {
     if (event.key === "Escape") {
+      event.preventDefault();
       event.stopPropagation();
       close();
       return;
     }
 
-    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+    if (event.key === "Tab") {
+      close();
+      return;
+    }
+
+    const next = nextIndexOnArrowKey(
+      event.key,
+      activeIndex,
+      JOB_STATUSES.length,
+    );
+    if (next !== null) {
       event.preventDefault();
-      const delta = event.key === "ArrowDown" ? 1 : -1;
-      setActiveIndex(
-        (current) =>
-          (current + delta + JOB_STATUSES.length) % JOB_STATUSES.length,
-      );
+      setActiveIndex(next);
     }
   }
 
   return (
     <div ref={containerRef} className="relative">
       <button
+        ref={triggerRef}
         type="button"
         aria-haspopup="menu"
         aria-expanded={open}
@@ -98,6 +117,7 @@ export function StatusPopover({
             openMenu();
           }
         }}
+        onKeyDown={handleTriggerKeyDown}
         className={`inline-flex items-center gap-2 rounded-md transition hover:bg-surface-muted ${
           showLabel ? "px-2 py-1" : "p-1.5"
         }`}
